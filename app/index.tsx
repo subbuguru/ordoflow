@@ -8,6 +8,7 @@ import {
     Platform,
     Pressable // Import Pressable
     ,
+
     StyleSheet,
     Text,
     TextInput,
@@ -21,6 +22,7 @@ interface Todo {
   completed: boolean;
   date: string;
   priority: 'p1' | 'p2' | 'p3' | 'p4';
+  description?: string;
 }
 
 const { height } = Dimensions.get('window');
@@ -43,6 +45,7 @@ export default function HomeScreen() {
         completed: false,
         date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
         priority,
+        description,
       },
     ]);
     setInput('');
@@ -74,7 +77,9 @@ export default function HomeScreen() {
             </View>
             <View style={styles.todoTextContainer}>
               <Text style={[styles.todoText, item.completed && styles.todoTextCompleted]}>{item.text}</Text>
-              <Text style={styles.todoDate}>{item.date}</Text>
+              {!!item.description && (
+                <Text style={styles.todoDescription}>{item.description}</Text>
+              )}
             </View>
           </TouchableOpacity>
         )}
@@ -223,6 +228,11 @@ const styles = StyleSheet.create({
   todoTextCompleted: {
     textDecorationLine: 'line-through',
     color: '#888',
+  },
+  todoDescription: {
+    color: '#888',
+    fontSize: 13,
+    marginTop: 2,
   },
   todoDate: {
     color: '#e44332',

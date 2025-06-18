@@ -49,8 +49,12 @@ export default function Completed() {
       useNativeDriver: true,
     }).start(async () => {
       await toggleTodoCompleted(item.id, false);
-      setCompletingId(null);
-      reload();
+      setTimeout(() => {
+        setCompletingId(null);
+        reload();
+        // Reset animation value for future use
+        if (animValue) animValue.setValue(1);
+      }, 50);
     });
   };
 
@@ -115,71 +119,90 @@ export default function Completed() {
       <FlatList
         data={completedTodos}
         keyExtractor={item => String(item.id)}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={styles.todoRow}
-            onLongPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-              if (Platform.OS === 'ios') {
-                ActionSheetIOS.showActionSheetWithOptions(
-                  {
-                    options: ['Cancel', 'Delete Task'],
-                    destructiveButtonIndex: 1,
-                    cancelButtonIndex: 0,
-                  },
-                  buttonIndex => {
-                    if (buttonIndex === 1) deleteTodoHandler(item.id);
+        renderItem={({ item }) => {
+          const isCompleting = completingId === item.id;
+          const animStyle = {
+            opacity: rowAnimValues[item.id],
+            transform: [
+              {
+                scale: rowAnimValues[item.id]
+                  ? rowAnimValues[item.id].interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [0.85, 1],
+                    })
+                  : 1,
+              },
+            ],
+          };
+          return (
+            <Animated.View style={animStyle}>
+              <TouchableOpacity
+                style={styles.todoRow}
+                onLongPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                  if (Platform.OS === 'ios') {
+                    ActionSheetIOS.showActionSheetWithOptions(
+                      {
+                        options: ['Cancel', 'Delete Task'],
+                        destructiveButtonIndex: 1,
+                        cancelButtonIndex: 0,
+                      },
+                      buttonIndex => {
+                        if (buttonIndex === 1) deleteTodoHandler(item.id);
+                      }
+                    );
+                  } else {
+                    Alert.alert(
+                      'Delete Task',
+                      'Are you sure you want to delete this task?',
+                      [
+                        { text: 'Cancel', style: 'cancel' },
+                        { text: 'Delete', style: 'destructive', onPress: () => deleteTodoHandler(item.id) },
+                      ]
+                    );
                   }
-                );
-              } else {
-                Alert.alert(
-                  'Delete Task',
-                  'Are you sure you want to delete this task?',
-                  [
-                    { text: 'Cancel', style: 'cancel' },
-                    { text: 'Delete', style: 'destructive', onPress: () => deleteTodoHandler(item.id) },
-                  ]
-                );
-              }
-            }}
-          >
-            <TouchableOpacity
-              style={[styles.circle,
-                item.priority === 'p1' && styles.circleP1,
-                item.priority === 'p2' && styles.circleP2,
-                item.priority === 'p3' && styles.circleP3,
-                item.priority === 'p4' && styles.circleP4,
-                item.completed && [
-                  item.priority === 'p1' && styles.circleCompletedP1,
-                  item.priority === 'p2' && styles.circleCompletedP2,
-                  item.priority === 'p3' && styles.circleCompletedP3,
-                  item.priority === 'p4' && styles.circleCompletedP4,
-                ]
-              ]}
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                handleUncomplete(item);
-              }}
-            >
-              <Animated.View style={{ transform: [{ scale: rowAnimValues[item.id] || 1 }] }}>
-                {item.completed && (
-                  <Ionicons
-                    name="checkmark"
-                    size={16}
-                    color="#fff"
-                    style={{ backgroundColor: 'transparent' }}
-                  />
-                )}
-              </Animated.View>
-            </TouchableOpacity>
-            <View style={styles.todoTextContainer}>
-              <Text style={[styles.todoText, styles.todoTextCompleted]}>{item.text}</Text>
-              {!!item.description && (
-                <Text style={styles.todoDescription}>{item.description}</Text>
-              )}
-            </View>
-          </TouchableOpacity>
-        )}
+                }}
+              >
+                <TouchableOpacity
+                  style={[styles.circle,
+                    item.priority === 'p1' && styles.circleP1,
+                    item.priority === 'p2' && styles.circleP2,
+                    item.priority === 'p3' && styles.circleP3,
+                    item.priority === 'p4' && styles.circleP4,
+                    item.completed && [
+                      item.priority === 'p1' && styles.circleCompletedP1,
+                      item.priority === 'p2' && styles.circleCompletedP2,
+                      item.priority === 'p3' && styles.circleCompletedP3,
+                      item.priority === 'p4' && styles.circleCompletedP4,
+                    ]
+                  ]}
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    handleUncomplete(item);
+                  }}
+                >
+                  {/* Animate the checkmark scale as well, for consistency */}
+                  <Animated.View style={{ transform: [{ scale: rowAnimValues[item.id] || 1 }] }}>
+                    {item.completed && (
+                      <Ionicons
+                        name="checkmark"
+                        size={16}
+                        color="#fff"
+                        style={{ backgroundColor: 'transparent' }}
+                      />
+                    )}
+                  </Animated.View>
+                </TouchableOpacity>
+                <View style={styles.todoTextContainer}>
+                  <Text style={[styles.todoText, styles.todoTextCompleted]}>{item.text}</Text>
+                  {!!item.description && (
+                    <Text style={styles.todoDescription}>{item.description}</Text>
+                  )}
+                </View>
+              </TouchableOpacity>
+            </Animated.View>
+          );
+        }}
         ListEmptyComponent={<Text style={styles.empty}>No completed tasks yet</Text>}
         contentContainerStyle={{ flexGrow: 1 }}
       />

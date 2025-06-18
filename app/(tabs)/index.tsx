@@ -42,6 +42,15 @@ export default function Tabs() {
     activeTodos.forEach(todo => {
       if (!rowAnimValues[todo.id]) {
         newAnimValues[todo.id] = new Animated.Value(1);
+      } else {
+        // Safely get the value of the animation
+        let value = 1;
+        try {
+          value = (rowAnimValues[todo.id] as any)._value ?? 1;
+        } catch {}
+        if (value === 0) {
+          rowAnimValues[todo.id].setValue(1);
+        }
       }
     });
     if (Object.keys(newAnimValues).length > 0) {

@@ -21,6 +21,11 @@ import {
 
 
 
+
+
+
+
+
     StyleSheet,
     Text,
     TextInput,
@@ -85,19 +90,30 @@ export default function HomeScreen() {
   // Load todos from SQLite
   const loadTodos = React.useCallback(() => {
     db.withTransactionAsync(async () => {
-      const todos = await db.getAllAsync<Todo>(`SELECT * FROM todos ORDER BY id DESC;`);
-      setTodos(todos as Todo[]);
+      const todosRaw = await db.getAllAsync<any>(`SELECT * FROM todos ORDER BY id DESC;`);
+      const todos: Todo[] = todosRaw.map((t: any) => ({
+        ...t,
+        id: String(t.id),
+        completed: !!t.completed,
+      }));
+      setTodos(todos);
     });
   }, []);
+
+  // Toggle completion in SQLite
+  const toggleTodo = async (id: string, completed: boolean) => {
+    await db.withTransactionAsync(async () => {
+      await db.runAsync(`UPDATE todos SET completed = ? WHERE id = ?`, [completed ? 0 : 1, Number(id)]);
+    });
+    await loadTodos();
+  };
 
   // Reload todos on mount
   useEffect(() => {
     loadTodos();
   }, [loadTodos]);
 
-  const toggleTodo = (id: string) => {
-    setTodos(prevTodos => prevTodos.filter(todo => todo.id !== id));
-  };
+
 
   return (
     <View style={styles.container}>
@@ -106,12 +122,13 @@ export default function HomeScreen() {
         data={todos}
         keyExtractor={item => String(item.id)}
         renderItem={({ item }) => (
-          <TouchableOpacity style={styles.todoRow} onPress={() => toggleTodo(item.id)}>
+          <TouchableOpacity style={styles.todoRow} onPress={() => toggleTodo(item.id, item.completed)}>
             <View style={[styles.circle,
               item.priority === 'p1' && styles.circleP1,
               item.priority === 'p2' && styles.circleP2,
               item.priority === 'p3' && styles.circleP3,
-              item.priority === 'p4' && styles.circleP4
+              item.priority === 'p4' && styles.circleP4,
+              item.completed && styles.circleCompleted
             ]}>
               {item.completed && <Ionicons name="checkmark" size={16} color="#fff" />}
             </View>
@@ -268,6 +285,10 @@ const styles = StyleSheet.create({
     borderColor: '#bbb',
     backgroundColor: 'transparent',
     opacity: 1,
+  },
+  circleCompleted: {
+    backgroundColor: '#e44332',
+    borderColor: '#e44332',
   },
   todoTextContainer: {
     flex: 1,

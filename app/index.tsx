@@ -2,30 +2,14 @@ import { Ionicons } from '@expo/vector-icons';
 import * as SQLite from 'expo-sqlite';
 import React, { useEffect, useState } from 'react';
 import {
+    ActionSheetIOS,
+    Alert,
     Dimensions,
     FlatList,
     KeyboardAvoidingView,
     Modal,
     Platform,
-    Pressable // Import Pressable
-    ,
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    Pressable,
     StyleSheet,
     Text,
     TextInput,
@@ -108,6 +92,14 @@ export default function HomeScreen() {
     await loadTodos();
   };
 
+  // Add deleteTodo function
+  const deleteTodo = async (id: string) => {
+    await db.withTransactionAsync(async () => {
+      await db.runAsync(`DELETE FROM todos WHERE id = ?`, [Number(id)]);
+    });
+    await loadTodos();
+  };
+
   // Reload todos on mount
   useEffect(() => {
     loadTodos();
@@ -122,7 +114,33 @@ export default function HomeScreen() {
         data={todos}
         keyExtractor={item => String(item.id)}
         renderItem={({ item }) => (
-          <TouchableOpacity style={styles.todoRow} onPress={() => toggleTodo(item.id, item.completed)}>
+          <TouchableOpacity
+            style={styles.todoRow}
+            onPress={() => toggleTodo(item.id, item.completed)}
+            onLongPress={() => {
+              if (Platform.OS === 'ios') {
+                ActionSheetIOS.showActionSheetWithOptions(
+                  {
+                    options: ['Cancel', 'Delete Task'],
+                    destructiveButtonIndex: 1,
+                    cancelButtonIndex: 0,
+                  },
+                  buttonIndex => {
+                    if (buttonIndex === 1) deleteTodo(item.id);
+                  }
+                );
+              } else {
+                Alert.alert(
+                  'Delete Task',
+                  'Are you sure you want to delete this task?',
+                  [
+                    { text: 'Cancel', style: 'cancel' },
+                    { text: 'Delete', style: 'destructive', onPress: () => deleteTodo(item.id) },
+                  ]
+                );
+              }
+            }}
+          >
             <View style={[styles.circle,
               item.priority === 'p1' && styles.circleP1,
               item.priority === 'p2' && styles.circleP2,

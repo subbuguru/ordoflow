@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import React, { useState } from 'react';
+import * as SQLite from 'expo-sqlite';
+import React, { useEffect, useState } from 'react';
 import {
     Dimensions,
     FlatList,
@@ -8,6 +9,14 @@ import {
     Platform,
     Pressable // Import Pressable
     ,
+
+
+
+
+
+
+
+
 
 
     StyleSheet,
@@ -26,6 +35,8 @@ interface Todo {
   description?: string;
 }
 
+// Use openDatabaseSync for compatibility with new expo-sqlite
+const db = SQLite.openDatabaseSync('todoit.db');
 const { height } = Dimensions.get('window');
 
 export default function HomeScreen() {
@@ -35,26 +46,67 @@ export default function HomeScreen() {
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState<'p1' | 'p2' | 'p3' | 'p4'>('p4');
   const [showPrioritySelector, setShowPrioritySelector] = useState(false);
+  const [inboxListId, setInboxListId] = useState<number | null>(null);
 
+  // Create tables and ensure Inbox list exists
+  useEffect(() => {
+    db.withTransactionAsync(async () => {
+      await db.execAsync(
+        `CREATE TABLE IF NOT EXISTS lists (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL
+        );`
+      );
+      await db.execAsync(
+        `CREATE TABLE IF NOT EXISTS todos (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          text TEXT,
+          description TEXT,
+          completed INTEGER,
+          date TEXT,
+          priority TEXT,
+          list_id INTEGER,
+          FOREIGN KEY(list_id) REFERENCES lists(id)
+        );`
+      );
+      await db.execAsync(
+        `INSERT INTO lists (name) SELECT 'Inbox' WHERE NOT EXISTS (SELECT 1 FROM lists WHERE name='Inbox');`
+      );
+      // After tables created, fetch Inbox list id
+      const result = await db.getAllAsync(`SELECT id FROM lists WHERE name='Inbox' LIMIT 1;`);
+      if (Array.isArray(result) && result.length > 0 && typeof result[0] === 'object' && result[0] !== null && 'id' in result[0]) setInboxListId((result[0] as {id: number}).id);
+    });
+  }, []);
+
+  // Add type annotations for SQLite transaction and result sets
+  // Save todo to SQLite
   const addTodo = () => {
-    if (!input.trim()) return;
-    setTodos([
-      ...todos,
-      {
-        id: Date.now().toString(),
-        text: input,
-        completed: false,
-        date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-        priority,
-        description,
-      },
-    ]);
+    if (!input.trim() || inboxListId == null) return;
+    db.withTransactionAsync(async () => {
+      await db.runAsync(
+        `INSERT INTO todos (text, description, completed, date, priority, list_id) VALUES (?, ?, ?, ?, ?, ?);`,
+        [input, description, 0, new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), priority, inboxListId]
+      );
+      loadTodos();
+    });
     setInput('');
     setDescription('');
     setPriority('p4');
-    setShowPrioritySelector(false);
     setModalVisible(false);
   };
+
+  const loadTodos = React.useCallback(() => {
+    if (inboxListId == null) return;
+    db.withTransactionAsync(async () => {
+      const todos = await db.getAllAsync<Todo>(`SELECT * FROM todos WHERE list_id = ?;`, [inboxListId]);
+      setTodos(todos as Todo[]);
+    });
+  }, [inboxListId]);
+
+  // Reload todos when Inbox list id changes
+  useEffect(() => {
+    loadTodos();
+  }, [inboxListId, loadTodos]);
 
   const toggleTodo = (id: string) => {
     setTodos(prevTodos => prevTodos.filter(todo => todo.id !== id));
@@ -62,7 +114,7 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.today}>Today</Text>
+      <Text style={styles.today}>Tasks</Text>
       <FlatList
         data={todos}
         keyExtractor={item => item.id}
@@ -153,16 +205,20 @@ export default function HomeScreen() {
           >
             <Pressable style={styles.bottomSheetOverlay} onPress={() => setShowPrioritySelector(false)} />
             <View style={styles.bottomSheet}>
-              {[['p1', 'Priority 1', '#e44332'], ['p2', 'Priority 2', '#ff9800'], ['p3', 'Priority 3', '#2196f3'], ['p4', 'No Priority', '#bbb']].map(([val, label, color]) => (
-                <TouchableOpacity
-                  key={val}
-                  style={styles.bottomSheetOption}
-                  onPress={() => { setPriority(val as any); setShowPrioritySelector(false); }}
-                >
-                  <Ionicons name="flag" size={18} color={color as string} style={{ marginRight: 10 }} />
-                  <Text style={{ color: '#fff', fontSize: 16 }}>{label}</Text>
-                </TouchableOpacity>
-              ))}
+              <View style={styles.bottomSheetList}>
+                {[['p1', 'Priority 1', '#e44332'], ['p2', 'Priority 2', '#ff9800'], ['p3', 'Priority 3', '#2196f3'], ['p4', 'No Priority', '#bbb']].map(([val, label, color], idx, arr) => (
+                  <React.Fragment key={val}>
+                    <TouchableOpacity
+                      style={styles.bottomSheetOption}
+                      onPress={() => { setPriority(val as any); setShowPrioritySelector(false); }}
+                    >
+                      <Ionicons name="flag" size={20} color={color as string} style={{ marginRight: 12 }} />
+                      <Text style={{ color: '#fff', fontSize: 18 }}>{label}</Text>
+                    </TouchableOpacity>
+                    {idx < arr.length - 1 && <View style={styles.bottomSheetDivider} />}
+                  </React.Fragment>
+                ))}
+              </View>
               <TouchableOpacity style={styles.bottomSheetCancel} onPress={() => setShowPrioritySelector(false)}>
                 <Text style={styles.bottomSheetCancelText}>Cancel</Text>
               </TouchableOpacity>
@@ -393,15 +449,23 @@ const styles = StyleSheet.create({
     paddingBottom: 32,
     zIndex: 100,
   },
+  bottomSheetList: {
+    backgroundColor: '#292929',
+    borderRadius: 12,
+    overflow: 'hidden',
+    marginBottom: 16,
+  },
   bottomSheetOption: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 18,
-    borderBottomWidth: 0,
-    borderRadius: 12,
-    marginBottom: 10,
-    backgroundColor: '#292929',
     paddingHorizontal: 10,
+    backgroundColor: 'transparent',
+  },
+  bottomSheetDivider: {
+    height: 1,
+    backgroundColor: '#333',
+    marginLeft: 0, // start at the very left
   },
   bottomSheetCancel: {
     marginTop: 8,

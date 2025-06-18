@@ -75,7 +75,7 @@ export default function Tabs() {
   // Load todos from SQLite
   const loadTodos = React.useCallback(() => {
     db.withTransactionAsync(async () => {
-      const todosRaw = await db.getAllAsync<any>(`SELECT * FROM todos ORDER BY id DESC;`);
+      const todosRaw = await db.getAllAsync<any>(`SELECT * FROM todos WHERE completed = 0 ORDER BY id DESC;`);
       const todos: Todo[] = todosRaw.map((t: any) => ({
         ...t,
         id: String(t.id),

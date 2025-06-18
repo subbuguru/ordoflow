@@ -6,6 +6,7 @@ import React, { useState } from 'react';
 import {
   ActionSheetIOS,
   Alert,
+  Animated,
   Dimensions,
   FlatList,
   Platform,
@@ -29,6 +30,7 @@ const { height } = Dimensions.get('window');
 
 export default function Completed() {
   const [todos, setTodos] = useState<Todo[]>([]);
+  const [animValues, setAnimValues] = useState<{ [id: string]: Animated.Value }>({});
 
   // Load only completed todos
   const loadTodos = React.useCallback(() => {
@@ -94,6 +96,7 @@ export default function Completed() {
 
   // Confirm before deleting all completed
   const confirmDeleteAll = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     Alert.alert(
       'Delete All Completed?',
       'Are you sure you want to delete all completed tasks? This cannot be undone.',
@@ -102,6 +105,26 @@ export default function Completed() {
         { text: 'Delete All', style: 'destructive', onPress: deleteAllCompleted },
       ]
     );
+  };
+
+  // Animate completion toggle
+  const animateToggle = (id: string, completed: boolean, cb: () => void) => {
+    if (!animValues[id]) {
+      setAnimValues(v => ({ ...v, [id]: new Animated.Value(1) }));
+    }
+    const toValue = completed ? 0.7 : 1;
+    Animated.sequence([
+      Animated.timing(animValues[id] || new Animated.Value(1), {
+        toValue,
+        duration: 120,
+        useNativeDriver: true,
+      }),
+      Animated.timing(animValues[id] || new Animated.Value(1), {
+        toValue: 1,
+        duration: 120,
+        useNativeDriver: true,
+      })
+    ]).start(cb);
   };
 
   useFocusEffect(
@@ -165,16 +188,21 @@ export default function Completed() {
                   item.priority === 'p4' && styles.circleCompletedP4,
                 ]
               ]}
-              onPress={() => toggleTodo(item.id, item.completed)}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                animateToggle(item.id, item.completed, () => toggleTodo(item.id, item.completed));
+              }}
             >
-              {item.completed && (
-                <Ionicons
-                  name="checkmark"
-                  size={16}
-                  color="#fff"
-                  style={{ backgroundColor: 'transparent' }}
-                />
-              )}
+              <Animated.View style={{ transform: [{ scale: animValues[item.id] || 1 }] }}>
+                {item.completed && (
+                  <Ionicons
+                    name="checkmark"
+                    size={16}
+                    color="#fff"
+                    style={{ backgroundColor: 'transparent' }}
+                  />
+                )}
+              </Animated.View>
             </TouchableOpacity>
             <View style={styles.todoTextContainer}>
               <Text style={[styles.todoText, styles.todoTextCompleted]}>{item.text}</Text>

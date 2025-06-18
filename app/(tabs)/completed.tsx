@@ -74,7 +74,6 @@ export default function Completed() {
         renderItem={({ item }) => (
           <TouchableOpacity
             style={styles.todoRow}
-            onPress={() => toggleTodo(item.id, item.completed)}
             onLongPress={() => {
               if (Platform.OS === 'ios') {
                 ActionSheetIOS.showActionSheetWithOptions(
@@ -99,18 +98,21 @@ export default function Completed() {
               }
             }}
           >
-            <View style={[styles.circle,
-              item.priority === 'p1' && styles.circleP1,
-              item.priority === 'p2' && styles.circleP2,
-              item.priority === 'p3' && styles.circleP3,
-              item.priority === 'p4' && styles.circleP4,
-              item.completed && [
-                item.priority === 'p1' && styles.circleCompletedP1,
-                item.priority === 'p2' && styles.circleCompletedP2,
-                item.priority === 'p3' && styles.circleCompletedP3,
-                item.priority === 'p4' && styles.circleCompletedP4,
-              ]
-            ]}>
+            <TouchableOpacity
+              style={[styles.circle,
+                item.priority === 'p1' && styles.circleP1,
+                item.priority === 'p2' && styles.circleP2,
+                item.priority === 'p3' && styles.circleP3,
+                item.priority === 'p4' && styles.circleP4,
+                item.completed && [
+                  item.priority === 'p1' && styles.circleCompletedP1,
+                  item.priority === 'p2' && styles.circleCompletedP2,
+                  item.priority === 'p3' && styles.circleCompletedP3,
+                  item.priority === 'p4' && styles.circleCompletedP4,
+                ]
+              ]}
+              onPress={() => toggleTodo(item.id, item.completed)}
+            >
               {item.completed && (
                 <Ionicons
                   name="checkmark"
@@ -119,7 +121,7 @@ export default function Completed() {
                   style={{ backgroundColor: 'transparent' }}
                 />
               )}
-            </View>
+            </TouchableOpacity>
             <View style={styles.todoTextContainer}>
               <Text style={[styles.todoText, styles.todoTextCompleted]}>{item.text}</Text>
               {!!item.description && (

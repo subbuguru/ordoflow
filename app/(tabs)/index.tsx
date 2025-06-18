@@ -40,6 +40,7 @@ export default function Tabs() {
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState<'p1' | 'p2' | 'p3' | 'p4'>('p4');
   const [showPrioritySelector, setShowPrioritySelector] = useState(false);
+  const [editingTodo, setEditingTodo] = useState<Todo | null>(null);
 
   // Create table for todos only
   useEffect(() => {
@@ -57,18 +58,28 @@ export default function Tabs() {
     }).then(loadTodos);
   }, []);
 
-  // Save todo to SQLite
-  const addTodo = async () => {
+  // Save or update todo to SQLite
+  const saveTodo = async () => {
     if (!input.trim()) return;
-    await db.withTransactionAsync(async () => {
-      await db.runAsync(
-        `INSERT INTO todos (text, description, completed, date, priority) VALUES (?, ?, ?, ?, ?);`,
-        [input, description, 0, new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), priority]
-      );
-    });
+    if (editingTodo) {
+      await db.withTransactionAsync(async () => {
+        await db.runAsync(
+          `UPDATE todos SET text = ?, description = ?, priority = ? WHERE id = ?`,
+          [input, description, priority, Number(editingTodo.id)]
+        );
+      });
+    } else {
+      await db.withTransactionAsync(async () => {
+        await db.runAsync(
+          `INSERT INTO todos (text, description, completed, date, priority) VALUES (?, ?, ?, ?, ?);`,
+          [input, description, 0, new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), priority]
+        );
+      });
+    }
     setInput('');
     setDescription('');
     setPriority('p4');
+    setEditingTodo(null);
     setModalVisible(false);
     loadTodos();
   };
@@ -102,6 +113,13 @@ export default function Tabs() {
     await loadTodos();
   };
 
+  const startEditTodo = (todo: Todo) => {
+    setEditingTodo(todo);
+    setInput(todo.text);
+    setDescription(todo.description || '');
+    setPriority(todo.priority);
+    setModalVisible(true);
+  };
 
   useFocusEffect(
     React.useCallback(() => {
@@ -119,7 +137,7 @@ export default function Tabs() {
         renderItem={({ item }) => (
           <TouchableOpacity
             style={styles.todoRow}
-            onPress={() => toggleTodo(item.id, item.completed)}
+            onPress={() => startEditTodo(item)}
             onLongPress={() => {
               if (Platform.OS === 'ios') {
                 ActionSheetIOS.showActionSheetWithOptions(
@@ -144,18 +162,21 @@ export default function Tabs() {
               }
             }}
           >
-            <View style={[styles.circle,
-              item.priority === 'p1' && styles.circleP1,
-              item.priority === 'p2' && styles.circleP2,
-              item.priority === 'p3' && styles.circleP3,
-              item.priority === 'p4' && styles.circleP4,
-              item.completed && [
-                item.priority === 'p1' && styles.circleCompletedP1,
-                item.priority === 'p2' && styles.circleCompletedP2,
-                item.priority === 'p3' && styles.circleCompletedP3,
-                item.priority === 'p4' && styles.circleCompletedP4,
-              ]
-            ]}>
+            <TouchableOpacity
+              style={[styles.circle,
+                item.priority === 'p1' && styles.circleP1,
+                item.priority === 'p2' && styles.circleP2,
+                item.priority === 'p3' && styles.circleP3,
+                item.priority === 'p4' && styles.circleP4,
+                item.completed && [
+                  item.priority === 'p1' && styles.circleCompletedP1,
+                  item.priority === 'p2' && styles.circleCompletedP2,
+                  item.priority === 'p3' && styles.circleCompletedP3,
+                  item.priority === 'p4' && styles.circleCompletedP4,
+                ]
+              ]}
+              onPress={() => toggleTodo(item.id, item.completed)}
+            >
               {item.completed && (
                 <Ionicons
                   name="checkmark"
@@ -164,7 +185,7 @@ export default function Tabs() {
                   style={{ backgroundColor: 'transparent' }}
                 />
               )}
-            </View>
+            </TouchableOpacity>
             <View style={styles.todoTextContainer}>
               <Text style={[styles.todoText, item.completed && styles.todoTextCompleted]}>{item.text}</Text>
               {!!item.description && (
@@ -176,7 +197,7 @@ export default function Tabs() {
         ListEmptyComponent={<Text style={styles.empty}>No tasks yet</Text>}
         contentContainerStyle={{ flexGrow: 1 }}
       />
-      <TouchableOpacity style={styles.addButton} onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); setModalVisible(true); }}>
+      <TouchableOpacity style={styles.addButton} onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); setEditingTodo(null); setInput(''); setDescription(''); setPriority('p4'); setModalVisible(true); }}>
         <Ionicons name="add" size={36} color="#fff" />
       </TouchableOpacity>
 
@@ -227,8 +248,8 @@ export default function Tabs() {
                     </Text>
                   </TouchableOpacity>
                 </View>
-                <TouchableOpacity onPress={addTodo} style={styles.modalAddBtn}>
-                  <Ionicons name="arrow-up" size={16} color="#fff" />
+                <TouchableOpacity onPress={saveTodo} style={styles.modalAddBtn}>
+                  <Ionicons name={editingTodo ? "checkmark" : "arrow-up"} size={16} color="#fff" />
                 </TouchableOpacity>
               </View>
             </View>

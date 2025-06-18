@@ -23,7 +23,7 @@ interface TodosContextType {
 
 const TodosContext = createContext<TodosContextType | undefined>(undefined);
 
-const db = SQLite.openDatabaseSync('todoit.db');
+const db = SQLite.openDatabaseSync('ordoflow.db');
 
 export function TodosProvider({ children }: { children: React.ReactNode }) {
   const [todos, setTodos] = useState<Todo[]>([]);

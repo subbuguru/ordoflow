@@ -7,15 +7,14 @@ import { TodoListItem } from './TodoListItem';
 
 type ThemeColors = typeof Colors.light;
 
-// ... (TodoListProps interface is unchanged) ...
 interface TodoListProps {
-    todos: Todo[];
-    onToggleComplete: (id: string, completed: boolean) => Promise<void>;
-    onDelete: (id: string) => Promise<void>;
-    onStartEdit: (todo: Todo) => void;
-    onReload: () => void;
-    emptyMessage: string;
-  }
+  todos: Todo[];
+  onToggleComplete: (id: string, completed: boolean) => Promise<void>;
+  onDelete: (id: string) => Promise<void>;
+  onStartEdit: (todo: Todo) => void;
+  onReload: () => void;
+  emptyMessage: string;
+}
 
 export function TodoList({ todos, onToggleComplete, onDelete, onStartEdit, onReload, emptyMessage }: TodoListProps) {
   const colors = useTheme();
@@ -35,22 +34,22 @@ export function TodoList({ todos, onToggleComplete, onDelete, onStartEdit, onRel
         />
       )}
       ListEmptyComponent={<Text style={styles.empty}>{emptyMessage}</Text>}
-      contentContainerStyle={todos.length === 0 ? styles.emptyContainer : null}
+      contentContainerStyle={todos.length === 0 ? styles.emptyContainer : undefined}
     />
   );
 }
 
-// Apply the explicit type to the 'colors' parameter here
 const getStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     emptyContainer: {
       flexGrow: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
+      // We removed `justifyContent: 'center'` which was pushing it to the middle.
+      // Now we'll just push it down from the top.
+      paddingTop: '25%', // Pushes the text down from the top of the list area
     },
     empty: {
       color: colors.textSecondary,
       textAlign: 'center',
-      marginTop: 40,
+      // We removed the extra margin from the text itself.
     },
   });

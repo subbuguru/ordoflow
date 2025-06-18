@@ -146,9 +146,21 @@ export default function HomeScreen() {
               item.priority === 'p2' && styles.circleP2,
               item.priority === 'p3' && styles.circleP3,
               item.priority === 'p4' && styles.circleP4,
-              item.completed && styles.circleCompleted
+              item.completed && [
+                item.priority === 'p1' && styles.circleCompletedP1,
+                item.priority === 'p2' && styles.circleCompletedP2,
+                item.priority === 'p3' && styles.circleCompletedP3,
+                item.priority === 'p4' && styles.circleCompletedP4,
+              ]
             ]}>
-              {item.completed && <Ionicons name="checkmark" size={16} color="#fff" />}
+              {item.completed && (
+                <Ionicons
+                  name="checkmark"
+                  size={16}
+                  color="#fff"
+                  style={{ backgroundColor: 'transparent' }}
+                />
+              )}
             </View>
             <View style={styles.todoTextContainer}>
               <Text style={[styles.todoText, item.completed && styles.todoTextCompleted]}>{item.text}</Text>
@@ -304,9 +316,21 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     opacity: 1,
   },
-  circleCompleted: {
+  circleCompletedP1: {
     backgroundColor: '#e44332',
     borderColor: '#e44332',
+  },
+  circleCompletedP2: {
+    backgroundColor: '#ff9800',
+    borderColor: '#ff9800',
+  },
+  circleCompletedP3: {
+    backgroundColor: '#2196f3',
+    borderColor: '#2196f3',
+  },
+  circleCompletedP4: {
+    backgroundColor: '#bbb',
+    borderColor: '#bbb',
   },
   todoTextContainer: {
     flex: 1,

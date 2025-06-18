@@ -1,35 +1,48 @@
-import { Ionicons } from '@expo/vector-icons';
-import { useFocusEffect } from '@react-navigation/native';
-import React, { useCallback, useState } from 'react';
-import { Dimensions, Keyboard, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
-import { EditTodoModal } from '../../components/todos/EditTodoModal';
-import { TodoList } from '../../components/todos/TodoList';
-import { Colors } from '../../constants/Colors';
-import { Todo, useTodosContext } from '../../hooks/TodosContext';
-import { useTheme } from '../../hooks/useTheme';
+import { Ionicons } from "@expo/vector-icons";
+import { useFocusEffect } from "@react-navigation/native";
+import React, { useCallback, useState } from "react";
+import {
+  Dimensions,
+  Keyboard,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
+import { EditTodoModal } from "../../components/todos/EditTodoModal";
+import { TodoList } from "../../components/todos/TodoList";
+import { Colors } from "../../constants/Colors";
+import { Todo, useTodosContext } from "../../hooks/TodosContext";
+import { useTheme } from "../../hooks/useTheme";
 
-const { height } = Dimensions.get('window');
+const { height } = Dimensions.get("window");
 type ThemeColors = typeof Colors.light;
 
 export default function SearchScreen() {
   const colors = useTheme();
   const styles = getStyles(colors);
 
-  const { todos, updateTodo, toggleTodoCompleted, deleteTodo, reload } = useTodosContext();
-  
+  const { todos, updateTodo, toggleTodoCompleted, deleteTodo, reload } =
+    useTodosContext();
+
   const [modalVisible, setModalVisible] = useState(false);
   const [editingTodo, setEditingTodo] = useState<Todo | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const filteredTodos = todos.filter(todo => {
+  const filteredTodos = todos.filter((todo) => {
     if (!searchQuery) return false;
     const query = searchQuery.toLowerCase();
     const text = todo.text.toLowerCase();
-    const description = todo.description?.toLowerCase() || '';
+    const description = todo.description?.toLowerCase() || "";
     return text.includes(query) || description.includes(query);
   });
 
-  const handleSaveTodo = async (todoData: { text: string; description: string; priority: 'p1' | 'p2' | 'p3' | 'p4' }) => {
+  const handleSaveTodo = async (todoData: {
+    text: string;
+    description: string;
+    priority: "p1" | "p2" | "p3" | "p4";
+  }) => {
     if (editingTodo) {
       await updateTodo({ ...editingTodo, ...todoData });
     }
@@ -42,7 +55,7 @@ export default function SearchScreen() {
     setEditingTodo(todo);
     setModalVisible(true);
   };
-  
+
   useFocusEffect(
     useCallback(() => {
       reload();
@@ -53,9 +66,14 @@ export default function SearchScreen() {
     // The Pressable now wraps the entire screen content to handle keyboard dismissal
     <Pressable style={styles.container} onPress={Keyboard.dismiss}>
       <Text style={styles.today}>Search</Text>
-      
+
       <View style={styles.searchContainer}>
-        <Ionicons name="search" size={20} color={colors.textSecondary} style={styles.searchIcon} />
+        <Ionicons
+          name="search"
+          size={20}
+          color={colors.textSecondary}
+          style={styles.searchIcon}
+        />
         <TextInput
           style={styles.searchInput}
           placeholder="Search all tasks..."
@@ -72,10 +90,14 @@ export default function SearchScreen() {
           onDelete={deleteTodo}
           onStartEdit={handleStartEdit}
           onReload={reload}
-          emptyMessage={searchQuery ? 'No tasks match your search.' : 'Type above to begin searching.'}
+          emptyMessage={
+            searchQuery
+              ? "No tasks match your search."
+              : "Type above to begin searching."
+          }
         />
       </View>
-      
+
       <EditTodoModal
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
@@ -86,42 +108,43 @@ export default function SearchScreen() {
   );
 }
 
-const getStyles = (colors: ThemeColors) => StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-    paddingTop: height * 0.12,
-  },
-  today: {
-    color: colors.text,
-    fontSize: 36,
-    fontWeight: 'bold',
-    marginBottom: 8,
-    // Apply horizontal padding here
-    paddingHorizontal: 20,
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.card,
-    borderRadius: 12,
-    marginBottom: 16,
-    // Apply horizontal margin here to align with the title's padding
-    marginHorizontal: 20,
-    paddingHorizontal: 12,
-  },
-  searchIcon: {
-    marginRight: 8,
-  },
-  searchInput: {
-    flex: 1,
-    height: 44,
-    color: colors.text,
-    fontSize: 16,
-  },
-  // The list container now just takes up the remaining space with proper horizontal padding
-  listContainer: {
-    flex: 1,
-    paddingHorizontal: 20,
-  }
-});
+const getStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+      paddingTop: height * 0.12,
+    },
+    today: {
+      color: colors.text,
+      fontSize: 36,
+      fontWeight: "bold",
+      marginBottom: 8,
+      // Apply horizontal padding here
+      paddingHorizontal: 20,
+    },
+    searchContainer: {
+      flexDirection: "row",
+      alignItems: "center",
+      backgroundColor: colors.card,
+      borderRadius: 12,
+      marginBottom: 16,
+      // Apply horizontal margin here to align with the title's padding
+      marginHorizontal: 20,
+      paddingHorizontal: 12,
+    },
+    searchIcon: {
+      marginRight: 8,
+    },
+    searchInput: {
+      flex: 1,
+      height: 44,
+      color: colors.text,
+      fontSize: 16,
+    },
+    // The list container now just takes up the remaining space with proper horizontal padding
+    listContainer: {
+      flex: 1,
+      paddingHorizontal: 20,
+    },
+  });

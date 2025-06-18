@@ -1,18 +1,24 @@
-import { Ionicons } from '@expo/vector-icons';
-import * as Haptics from 'expo-haptics';
-import React, { useState } from 'react';
-import { Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { Ionicons } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
+import React, { useState } from "react";
+import {
+  Pressable,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
   runOnJS,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
-} from 'react-native-reanimated';
+} from "react-native-reanimated";
 
-import { Colors } from '../../constants/Colors';
-import { Todo } from '../../hooks/TodosContext';
-import { useTheme } from '../../hooks/useTheme';
+import { Colors } from "../../constants/Colors";
+import { Todo } from "../../hooks/TodosContext";
+import { useTheme } from "../../hooks/useTheme";
 
 type ThemeColors = typeof Colors.light;
 
@@ -28,7 +34,15 @@ interface TodoListItemProps {
 
 const SWIPE_THRESHOLD = -100;
 
-export function TodoListItem({ item, onToggleComplete, onDelete, onStartEdit, onReload, onDrag, isActive }: TodoListItemProps) {
+export function TodoListItem({
+  item,
+  onToggleComplete,
+  onDelete,
+  onStartEdit,
+  onReload,
+  onDrag,
+  isActive,
+}: TodoListItemProps) {
   const colors = useTheme();
   const styles = getStyles(colors);
 
@@ -52,7 +66,7 @@ export function TodoListItem({ item, onToggleComplete, onDelete, onStartEdit, on
       }
     })
     .onEnd(() => {
-      'worklet';
+      "worklet";
       if (translateX.value < SWIPE_THRESHOLD) {
         translateX.value = withTiming(-500);
         itemOpacity.value = withTiming(0, undefined, (isFinished) => {
@@ -99,7 +113,7 @@ export function TodoListItem({ item, onToggleComplete, onDelete, onStartEdit, on
       }, 350);
     }
   };
-  
+
   const isComplete = item.completed || isVisuallyCompleting;
 
   return (
@@ -111,22 +125,27 @@ export function TodoListItem({ item, onToggleComplete, onDelete, onStartEdit, on
 
         <GestureDetector gesture={panGesture}>
           <Animated.View style={rSwipeStyle}>
-            <Pressable
-              style={styles.todoRow}
-              onPress={() => onStartEdit(item)}
-            >
+            <Pressable style={styles.todoRow} onPress={() => onStartEdit(item)}>
               <TouchableOpacity onPress={handleToggleComplete}>
                 <View
                   style={[
                     styles.circle,
-                    !isComplete && (item.priority === 'p1' && styles.circleP1),
-                    !isComplete && (item.priority === 'p2' && styles.circleP2),
-                    !isComplete && (item.priority === 'p3' && styles.circleP3),
-                    !isComplete && (item.priority === 'p4' && styles.circleP4),
-                    isComplete && (item.priority === 'p1' && styles.circleCompletedP1),
-                    isComplete && (item.priority === 'p2' && styles.circleCompletedP2),
-                    isComplete && (item.priority === 'p3' && styles.circleCompletedP3),
-                    isComplete && (item.priority === 'p4' && styles.circleCompletedP4),
+                    !isComplete && item.priority === "p1" && styles.circleP1,
+                    !isComplete && item.priority === "p2" && styles.circleP2,
+                    !isComplete && item.priority === "p3" && styles.circleP3,
+                    !isComplete && item.priority === "p4" && styles.circleP4,
+                    isComplete &&
+                      item.priority === "p1" &&
+                      styles.circleCompletedP1,
+                    isComplete &&
+                      item.priority === "p2" &&
+                      styles.circleCompletedP2,
+                    isComplete &&
+                      item.priority === "p3" &&
+                      styles.circleCompletedP3,
+                    isComplete &&
+                      item.priority === "p4" &&
+                      styles.circleCompletedP4,
                   ]}
                 >
                   {isComplete && (
@@ -135,7 +154,12 @@ export function TodoListItem({ item, onToggleComplete, onDelete, onStartEdit, on
                 </View>
               </TouchableOpacity>
               <View style={styles.todoTextContainer}>
-                <Text style={[styles.todoText, isComplete && styles.todoTextCompleted]}>
+                <Text
+                  style={[
+                    styles.todoText,
+                    isComplete && styles.todoTextCompleted,
+                  ]}
+                >
                   {item.text}
                 </Text>
                 {!!item.description && (
@@ -143,12 +167,19 @@ export function TodoListItem({ item, onToggleComplete, onDelete, onStartEdit, on
                 )}
               </View>
               {onDrag && (
-                <TouchableOpacity 
+                <TouchableOpacity
                   onLongPress={onDrag}
-                  style={[styles.dragHandle, isActive && styles.dragHandleActive]}
+                  style={[
+                    styles.dragHandle,
+                    isActive && styles.dragHandleActive,
+                  ]}
                   hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
                 >
-                  <Ionicons name="reorder-three-outline" size={24} color={colors.textSecondary} />
+                  <Ionicons
+                    name="reorder-three-outline"
+                    size={24}
+                    color={colors.textSecondary}
+                  />
                 </TouchableOpacity>
               )}
             </Pressable>
@@ -163,22 +194,22 @@ export function TodoListItem({ item, onToggleComplete, onDelete, onStartEdit, on
 const getStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     swipeContainer: {
-      justifyContent: 'center',
+      justifyContent: "center",
     },
     deleteBackground: {
       backgroundColor: colors.p1,
-      position: 'absolute',
+      position: "absolute",
       right: 0,
       left: 0,
       top: 0,
       bottom: 0,
-      justifyContent: 'center',
-      alignItems: 'flex-end',
+      justifyContent: "center",
+      alignItems: "flex-end",
       paddingRight: 40,
     },
     todoRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
+      flexDirection: "row",
+      alignItems: "center",
       paddingVertical: 16,
       borderBottomWidth: 1,
       borderBottomColor: colors.border,
@@ -190,8 +221,8 @@ const getStyles = (colors: ThemeColors) =>
       borderRadius: 13,
       borderWidth: 2,
       marginRight: 16,
-      alignItems: 'center',
-      justifyContent: 'center',
+      alignItems: "center",
+      justifyContent: "center",
     },
     circleP1: { borderColor: colors.p1, backgroundColor: colors.p1_bg },
     circleP2: { borderColor: colors.p2, backgroundColor: colors.p2_bg },
@@ -203,8 +234,15 @@ const getStyles = (colors: ThemeColors) =>
     circleCompletedP4: { backgroundColor: colors.p4, borderColor: colors.p4 },
     todoTextContainer: { flex: 1 },
     todoText: { color: colors.text, fontSize: 16 },
-    todoTextCompleted: { textDecorationLine: 'line-through', color: colors.textSecondary },
-    todoDescription: { color: colors.textSecondary, fontSize: 13, marginTop: 2 },
+    todoTextCompleted: {
+      textDecorationLine: "line-through",
+      color: colors.textSecondary,
+    },
+    todoDescription: {
+      color: colors.textSecondary,
+      fontSize: 13,
+      marginTop: 2,
+    },
     dragHandle: {
       paddingLeft: 16,
     },

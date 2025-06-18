@@ -1,31 +1,43 @@
-import { useFocusEffect } from '@react-navigation/native';
-import * as Haptics from 'expo-haptics';
-import React, { useCallback, useState } from 'react';
-import { Dimensions, StyleSheet, Text, View } from 'react-native';
+import { useFocusEffect } from "@react-navigation/native";
+import * as Haptics from "expo-haptics";
+import React, { useCallback, useState } from "react";
+import { Dimensions, StyleSheet, Text, View } from "react-native";
 
-import { AddTodoButton } from '@/components/todos/AddTodoButton';
-import { EditTodoModal } from '../../components/todos/EditTodoModal';
-import { TodoList } from '../../components/todos/TodoList';
-import { Colors } from '../../constants/Colors';
-import { Todo, useTodosContext } from '../../hooks/TodosContext';
-import { useTheme } from '../../hooks/useTheme';
+import { AddTodoButton } from "@/components/todos/AddTodoButton";
+import { EditTodoModal } from "../../components/todos/EditTodoModal";
+import { TodoList } from "../../components/todos/TodoList";
+import { Colors } from "../../constants/Colors";
+import { Todo, useTodosContext } from "../../hooks/TodosContext";
+import { useTheme } from "../../hooks/useTheme";
 
-const { height } = Dimensions.get('window');
+const { height } = Dimensions.get("window");
 type ThemeColors = typeof Colors.light;
 
 export default function Index() {
   const colors = useTheme();
   const styles = getStyles(colors);
 
-  const { todos, addTodo, updateTodo, updateTodoOrder, toggleTodoCompleted, deleteTodo, reload } = useTodosContext();
-  
+  const {
+    todos,
+    addTodo,
+    updateTodo,
+    updateTodoOrder,
+    toggleTodoCompleted,
+    deleteTodo,
+    reload,
+  } = useTodosContext();
+
   const [modalVisible, setModalVisible] = useState(false);
   const [editingTodo, setEditingTodo] = useState<Todo | null>(null);
-  
+
   // The search state and filtering logic have been removed.
   const activeTodos = todos.filter((t: Todo) => !t.completed);
 
-  const handleSaveTodo = async (todoData: { text: string; description: string; priority: 'p1' | 'p2' | 'p3' | 'p4' }) => {
+  const handleSaveTodo = async (todoData: {
+    text: string;
+    description: string;
+    priority: "p1" | "p2" | "p3" | "p4";
+  }) => {
     if (editingTodo) {
       await updateTodo({ ...editingTodo, ...todoData });
     } else {
@@ -40,12 +52,12 @@ export default function Index() {
     setEditingTodo(todo);
     setModalVisible(true);
   };
-  
+
   const handleOpenAddModal = () => {
     setEditingTodo(null);
     setModalVisible(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-  }
+  };
 
   useFocusEffect(
     useCallback(() => {
@@ -56,7 +68,7 @@ export default function Index() {
   return (
     <View style={styles.container}>
       <Text style={styles.today}>Tasks</Text>
-      
+
       {/* The Search Bar UI has been removed from here. */}
 
       {/* The TodoList now receives the `activeTodos` directly. */}
@@ -69,9 +81,9 @@ export default function Index() {
         onReorder={updateTodoOrder}
         emptyMessage="No tasks yet. Add one!"
       />
-      
+
       <AddTodoButton onPress={handleOpenAddModal} />
-      
+
       <EditTodoModal
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
@@ -82,18 +94,19 @@ export default function Index() {
   );
 }
 
-const getStyles = (colors: ThemeColors) => StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-    paddingTop: height * 0.12,
-    paddingHorizontal: 20, // Padding is restored to the main container
-  },
-  today: {
-    color: colors.text,
-    fontSize: 36,
-    fontWeight: 'bold',
-    marginBottom: 16, // Increased margin to give the list more space
-  },
-  // The search-related styles have been removed.
-});
+const getStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+      paddingTop: height * 0.12,
+      paddingHorizontal: 20, // Padding is restored to the main container
+    },
+    today: {
+      color: colors.text,
+      fontSize: 36,
+      fontWeight: "bold",
+      marginBottom: 16, // Increased margin to give the list more space
+    },
+    // The search-related styles have been removed.
+  });

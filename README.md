@@ -1,50 +1,112 @@
-# Welcome to your Expo app 👋
+# Ordoflow
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Ordoflow is a todo list application built with Expo and React-Native. It was built as an experiment "vibe-coding" with Google Gemini 2.5 Pro. Even this readme.md is AI generated...
 
-## Get started
+## ✨ Features
 
-1. Install dependencies
+* **Full Task Management:** Add, edit, complete, and delete tasks with titles, descriptions, and priorities.
+* **Task Priorities:** Assign one of four priority levels (P1-P4) to each task, visualized with distinct colors.
+* **Persistent Storage:** Your tasks are saved locally on your device using a built-in SQLite database.
+* **Dynamic Theming:** Automatically adapts to your device's system-wide Light and Dark modes for a native feel.
+* **Manual Reordering:** Long-press and drag active tasks to arrange them in any order you prefer.
+* **Modern Gestures:** Swipe any task to the left to quickly delete it.
+* **Dedicated Search:** A separate tab allows you to instantly search the title and description of all your tasks, both active and completed.
 
-   ```bash
-   npm install
-   ```
+## 🚀 Getting Started
 
-2. Start the app
+Follow these instructions to get the project running on your local machine for development and testing.
 
-   ```bash
-   npx expo start
-   ```
+### 1. Install Dependencies
 
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+In your project's terminal, run the following command to install all the necessary packages.
 
 ```bash
-npm run reset-project
+npm install
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+### 2. Start the Development Server
 
-## Learn more
+Start the Expo development server:
 
-To learn more about developing your project with Expo, look at the following resources:
+```bash
+npx expo start
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
 
-## Join the community
+## 📁 Project Structure
 
-Join our community of developers creating universal apps.
+```
+app/
+├── (tabs)/              # Tab-based navigation
+│   ├── index.tsx        # Main todo list
+│   ├── completed.tsx    # Completed tasks
+│   └── search.tsx       # Search functionality
+└── _layout.tsx          # Root layout
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+components/
+├── todos/               # Todo-related components
+│   ├── AddTodoButton.tsx
+│   ├── EditTodoModal.tsx
+│   ├── TodoList.tsx
+│   └── TodoListItem.tsx
+└── ui/                  # Reusable UI components
+
+hooks/
+├── TodosContext.tsx     # Global state management
+├── useColorScheme.ts    # Theme detection
+└── useTheme.ts          # Theme utilities
+
+constants/
+└── Colors.ts            # Color definitions
+```
+
+## 🎯 Usage
+
+### Adding Tasks
+1. Tap the "+" button to create a new task
+2. Enter a title (required) and optional description
+3. Select a priority level (P1-P4)
+4. Tap "Add Task" to save
+
+### Managing Tasks
+- **Complete**: Tap the checkbox to mark as complete
+- **Edit**: Tap on a task to edit its details
+- **Reorder**: Long-press and drag tasks to rearrange
+- **Delete**: Swipe left on any task to delete
+
+### Search
+- Use the Search tab to find tasks by title or description
+- Search works across both active and completed tasks
+
+## 🎨 Priority System
+
+Tasks can be assigned one of four priority levels:
+
+- **P1** (Highest): Red indicator
+- **P2** (High): Orange indicator  
+- **P3** (Medium): Yellow indicator
+- **P4** (Low): Blue indicator
+
+## 💾 Data Storage
+
+Ordoflow uses Expo SQLite for local data persistence. Your tasks are stored directly on your device and don't require an internet connection.
+
+## 🌙 Theming
+
+The app automatically adapts to your device's system theme:
+- **Light Mode**: Clean, bright interface
+- **Dark Mode**: Comfortable dark interface
+
+## 🤝 Contributing
+
+This project was built as an experimental "vibe-coding" session with AI assistance. Feel free to fork and modify for your own use!
+
+## 📄 License
+
+This project is open source and available under the [MIT License](LICENSE).
+
+## 🙏 Acknowledgments
+
+- Built with [Expo](https://expo.dev/) and React Native
+- Created through AI-assisted development with Google Gemini 2.5 Pro
+- Icons provided by [Expo Vector Icons](https://icons.expo.fyi/)

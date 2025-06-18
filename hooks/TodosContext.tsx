@@ -7,7 +7,8 @@ export interface Todo {
   completed: boolean;
   date: string;
   priority: 'p1' | 'p2' | 'p3' | 'p4';
-  description?: string;
+  orderIndex: number;
+  description?: string; // <<< THIS LINE WAS MISSING. IT IS NOW CORRECTED.
 }
 
 interface TodosContextType {
@@ -15,6 +16,7 @@ interface TodosContextType {
   loading: boolean;
   addTodo: (input: string, description: string, priority: 'p1' | 'p2' | 'p3' | 'p4') => Promise<void>;
   updateTodo: (todo: Todo) => Promise<void>;
+  updateTodoOrder: (reorderedTodos: Todo[]) => Promise<void>;
   toggleTodoCompleted: (id: string, completed: boolean) => Promise<void>;
   deleteTodo: (id: string) => Promise<void>;
   deleteAllCompleted: () => Promise<void>;
@@ -25,8 +27,6 @@ const TodosContext = createContext<TodosContextType | undefined>(undefined);
 
 const db = SQLite.openDatabaseSync('ordoflow.db');
 
-// --- ADDED: Initialize the database schema ---
-// This runs once when the app starts and ensures the 'todos' table exists.
 db.execSync(`
   PRAGMA journal_mode = WAL;
   CREATE TABLE IF NOT EXISTS todos (
@@ -35,10 +35,10 @@ db.execSync(`
     description TEXT,
     completed INTEGER DEFAULT 0 NOT NULL,
     date TEXT NOT NULL,
-    priority TEXT NOT NULL
+    priority TEXT NOT NULL,
+    orderIndex INTEGER NOT NULL
   );
 `);
-// -----------------------------------------
 
 export function TodosProvider({ children }: { children: React.ReactNode }) {
   const [todos, setTodos] = useState<Todo[]>([]);
@@ -46,7 +46,7 @@ export function TodosProvider({ children }: { children: React.ReactNode }) {
 
   const loadTodos = useCallback(async () => {
     setLoading(true);
-    const result = await db.getAllAsync<any>(`SELECT * FROM todos ORDER BY id DESC;`);
+    const result = await db.getAllAsync<any>(`SELECT * FROM todos ORDER BY orderIndex ASC;`);
     const loadedTodos: Todo[] = result.map((t: any) => ({
       ...t,
       id: String(t.id),
@@ -62,9 +62,12 @@ export function TodosProvider({ children }: { children: React.ReactNode }) {
 
   const addTodo = async (input: string, description: string, priority: 'p1' | 'p2' | 'p3' | 'p4') => {
     const date = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const maxIndexResult = await db.getFirstAsync<{ 'MAX(orderIndex)': number | null }>(`SELECT MAX(orderIndex) FROM todos`);
+    const newIndex = (maxIndexResult?.['MAX(orderIndex)'] ?? -1) + 1;
+
     await db.runAsync(
-      `INSERT INTO todos (text, description, completed, date, priority) VALUES (?, ?, ?, ?, ?);`,
-      [input, description, 0, date, priority]
+      `INSERT INTO todos (text, description, completed, date, priority, orderIndex) VALUES (?, ?, ?, ?, ?, ?);`,
+      [input, description, 0, date, priority, newIndex]
     );
     await loadTodos();
   };
@@ -74,6 +77,18 @@ export function TodosProvider({ children }: { children: React.ReactNode }) {
       `UPDATE todos SET text = ?, description = ?, priority = ? WHERE id = ?`,
       [todo.text, todo.description ?? '', todo.priority, Number(todo.id)]
     );
+    await loadTodos();
+  };
+
+  const updateTodoOrder = async (reorderedTodos: Todo[]) => {
+    await db.withTransactionAsync(async () => {
+      for (let i = 0; i < reorderedTodos.length; i++) {
+        await db.runAsync(
+          `UPDATE todos SET orderIndex = ? WHERE id = ?`,
+          [i, Number(reorderedTodos[i].id)]
+        );
+      }
+    });
     await loadTodos();
   };
 
@@ -93,7 +108,7 @@ export function TodosProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <TodosContext.Provider value={{ todos, loading, addTodo, updateTodo, toggleTodoCompleted, deleteTodo, deleteAllCompleted, reload: loadTodos }}>
+    <TodosContext.Provider value={{ todos, loading, addTodo, updateTodo, updateTodoOrder, toggleTodoCompleted, deleteTodo, deleteAllCompleted, reload: loadTodos }}>
       {children}
     </TodosContext.Provider>
   );

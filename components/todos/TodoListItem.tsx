@@ -39,13 +39,11 @@ export function TodoListItem({ item, onToggleComplete, onDelete, onStartEdit, on
   const itemScale = useSharedValue(1);
 
   React.useEffect(() => {
-    if (item.completed === false) {
-      translateX.value = withTiming(0);
-      itemOpacity.value = withTiming(1);
-      itemScale.value = withTiming(1);
-      setIsVisuallyCompleting(false);
-    }
-  }, [item.completed, translateX, itemOpacity, itemScale]);
+    itemOpacity.value = withTiming(1);
+    itemScale.value = withTiming(1);
+    translateX.value = withTiming(0);
+    setIsVisuallyCompleting(false);
+  }, [item]);
 
   const panGesture = Gesture.Pan()
     .onUpdate((event) => {
@@ -77,20 +75,29 @@ export function TodoListItem({ item, onToggleComplete, onDelete, onStartEdit, on
     transform: [{ scale: itemScale.value }],
   }));
 
-  const handleToggleComplete = () => {
+  // UPDATED: This function is now smarter
+  const handleToggleComplete = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    
-    setIsVisuallyCompleting(true);
 
-    setTimeout(() => {
-      itemOpacity.value = withTiming(0);
-      itemScale.value = withTiming(0.85);
-    }, 50);
-
-    setTimeout(async () => {
-      await onToggleComplete(item.id, !item.completed);
-      runOnJS(onReload)();
-    }, 350);
+    if (item.completed) {
+      // --- UN-COMPLETING A TASK ---
+      // If the task is already complete, we just update the data instantly.
+      // No animations are needed because the item should stay on the screen.
+      await onToggleComplete(item.id, false);
+      onReload();
+    } else {
+      // --- COMPLETING A TASK ---
+      // Use the existing animation flow for completing a new task.
+      setIsVisuallyCompleting(true);
+      setTimeout(() => {
+        itemOpacity.value = withTiming(0);
+        itemScale.value = withTiming(0.85);
+      }, 50);
+      setTimeout(async () => {
+        await onToggleComplete(item.id, true);
+        onReload();
+      }, 350);
+    }
   };
   
   const isComplete = item.completed || isVisuallyCompleting;
@@ -105,23 +112,21 @@ export function TodoListItem({ item, onToggleComplete, onDelete, onStartEdit, on
         <GestureDetector gesture={panGesture}>
           <Animated.View style={rSwipeStyle}>
             <Pressable
-              style={styles.todoRow} // FIX 2: Alignment fix is in this style below
+              style={styles.todoRow}
               onPress={() => onStartEdit(item)}
             >
               <TouchableOpacity onPress={handleToggleComplete}>
                 <View
                   style={[
                     styles.circle,
-                    item.priority === 'p1' && styles.circleP1,
-                    item.priority === 'p2' && styles.circleP2,
-                    item.priority === 'p3' && styles.circleP3,
-                    item.priority === 'p4' && styles.circleP4,
-                    isComplete && [
-                      styles.circleCompletedP1,
-                      styles.circleCompletedP2,
-                      styles.circleCompletedP3,
-                      styles.circleCompletedP4,
-                    ],
+                    !isComplete && (item.priority === 'p1' && styles.circleP1),
+                    !isComplete && (item.priority === 'p2' && styles.circleP2),
+                    !isComplete && (item.priority === 'p3' && styles.circleP3),
+                    !isComplete && (item.priority === 'p4' && styles.circleP4),
+                    isComplete && (item.priority === 'p1' && styles.circleCompletedP1),
+                    isComplete && (item.priority === 'p2' && styles.circleCompletedP2),
+                    isComplete && (item.priority === 'p3' && styles.circleCompletedP3),
+                    isComplete && (item.priority === 'p4' && styles.circleCompletedP4),
                   ]}
                 >
                   {isComplete && (
@@ -141,7 +146,6 @@ export function TodoListItem({ item, onToggleComplete, onDelete, onStartEdit, on
                 <TouchableOpacity 
                   onLongPress={onDrag}
                   style={[styles.dragHandle, isActive && styles.dragHandleActive]}
-                  // FIX 1: Increased touch area for the drag handle
                   hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
                 >
                   <Ionicons name="reorder-three-outline" size={24} color={colors.textSecondary} />
@@ -155,6 +159,7 @@ export function TodoListItem({ item, onToggleComplete, onDelete, onStartEdit, on
   );
 }
 
+// Styles are unchanged
 const getStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     swipeContainer: {
@@ -175,8 +180,6 @@ const getStyles = (colors: ThemeColors) =>
       flexDirection: 'row',
       alignItems: 'center',
       paddingVertical: 16,
-      // FIX 2: Removed horizontal padding to allow alignment with screen title
-      // paddingHorizontal: 20, 
       borderBottomWidth: 1,
       borderBottomColor: colors.border,
       backgroundColor: colors.background,
@@ -203,7 +206,7 @@ const getStyles = (colors: ThemeColors) =>
     todoTextCompleted: { textDecorationLine: 'line-through', color: colors.textSecondary },
     todoDescription: { color: colors.textSecondary, fontSize: 13, marginTop: 2 },
     dragHandle: {
-      paddingLeft: 16, // Give it some space from the text
+      paddingLeft: 16,
     },
     dragHandleActive: {
       backgroundColor: colors.border,

@@ -1,6 +1,19 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
-import { Dimensions, FlatList, KeyboardAvoidingView, Modal, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import {
+    Dimensions,
+    FlatList,
+    KeyboardAvoidingView,
+    Modal,
+    Platform,
+    Pressable // Import Pressable
+    ,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
+} from 'react-native';
 
 interface Todo {
   id: string;
@@ -51,7 +64,7 @@ export default function HomeScreen() {
         keyExtractor={item => item.id}
         renderItem={({ item }) => (
           <TouchableOpacity style={styles.todoRow} onPress={() => toggleTodo(item.id)}>
-            <View style={[styles.circle, 
+            <View style={[styles.circle,
               item.priority === 'p1' && styles.circleP1,
               item.priority === 'p2' && styles.circleP2,
               item.priority === 'p3' && styles.circleP3,
@@ -71,6 +84,8 @@ export default function HomeScreen() {
       <TouchableOpacity style={styles.addButton} onPress={() => setModalVisible(true)}>
         <Ionicons name="add" size={36} color="#fff" />
       </TouchableOpacity>
+
+      {/* --- UPDATED MODAL --- */}
       <Modal
         visible={modalVisible}
         animationType="slide"
@@ -78,60 +93,69 @@ export default function HomeScreen() {
         onRequestClose={() => setModalVisible(false)}
         onDismiss={() => setShowPrioritySelector(false)}
       >
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          style={styles.modalContainer}
-        >
-          <View style={styles.modalContent}>
-            <TextInput
-              style={styles.inputTitle}
-              placeholder="e.g., Finish sales report by Thu at 3pm"
-              value={input}
-              onChangeText={setInput}
-              autoFocus
-              placeholderTextColor="#888"
-            />
-            <TextInput
-              style={styles.inputDescription}
-              placeholder="Description"
-              value={description}
-              onChangeText={setDescription}
-              placeholderTextColor="#888"
-              multiline
-            />
-            <View style={styles.divider} />
-            <View style={styles.modalActionsRow}>
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <TouchableOpacity
-                  style={[styles.priorityButton, styles[`priorityButton_${priority}`]]}
-                  onPress={() => setShowPrioritySelector(true)}
-                >
-                  <Ionicons name="flag" size={16} color={priority === 'p4' ? '#bbb' : priority === 'p1' ? '#e44332' : priority === 'p2' ? '#ff9800' : '#2196f3'} style={{ marginRight: 6 }} />
-                  <Text style={{ color: '#fff', fontSize: 13 }}>
-                    {priority === 'p1' ? 'Priority 1' : priority === 'p2' ? 'Priority 2' : priority === 'p3' ? 'Priority 3' : 'No Priority'}
-                  </Text>
+        <View style={styles.modalContainer}>
+          {/* This Pressable acts as the background overlay. Clicking it closes the modal. */}
+          <Pressable
+            style={StyleSheet.absoluteFill}
+            onPress={() => setModalVisible(false)}
+          />
+
+          {/* The content sits on top of the Pressable background */}
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+            style={{ width: '100%' }}
+          >
+            <View style={styles.modalContent}>
+              <TextInput
+                style={styles.inputTitle}
+                placeholder="e.g., Finish sales report by Thu at 3pm"
+                value={input}
+                onChangeText={setInput}
+                autoFocus
+                placeholderTextColor="#888"
+              />
+              <TextInput
+                style={styles.inputDescription}
+                placeholder="Description"
+                value={description}
+                onChangeText={setDescription}
+                placeholderTextColor="#888"
+                multiline
+              />
+              <View style={styles.divider} />
+              <View style={styles.modalActionsRow}>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <TouchableOpacity
+                    style={[styles.priorityButton, styles[`priorityButton_${priority}`]]}
+                    onPress={() => setShowPrioritySelector(true)}
+                  >
+                    <Ionicons name="flag" size={16} color={priority === 'p4' ? '#bbb' : priority === 'p1' ? '#e44332' : priority === 'p2' ? '#ff9800' : '#2196f3'} style={{ marginRight: 6 }} />
+                    <Text style={{ color: '#fff', fontSize: 13 }}>
+                      {priority === 'p1' ? 'Priority 1' : priority === 'p2' ? 'Priority 2' : priority === 'p3' ? 'Priority 3' : 'No Priority'}
+                    </Text>
+                  </TouchableOpacity>
+                  {showPrioritySelector && (
+                    <View style={styles.prioritySelectorContainer}>
+                      {[['p1', 'Priority 1', '#e44332'], ['p2', 'Priority 2', '#ff9800'], ['p3', 'Priority 3', '#2196f3'], ['p4', 'No Priority', '#bbb']].map(([val, label, color]) => (
+                        <TouchableOpacity
+                          key={val}
+                          style={styles.prioritySelectorOption}
+                          onPress={() => { setPriority(val as any); setShowPrioritySelector(false); }}
+                        >
+                          <Ionicons name="flag" size={15} color={color as string} style={{ marginRight: 6 }} />
+                          <Text style={{ color: '#fff', fontSize: 13 }}>{label}</Text>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  )}
+                </View>
+                <TouchableOpacity onPress={addTodo} style={styles.modalAddBtn}>
+                  <Ionicons name="arrow-up" size={16} color="#fff" />
                 </TouchableOpacity>
-                {showPrioritySelector && (
-                  <View style={styles.prioritySelectorContainer}>
-                    {[['p1', 'Priority 1', '#e44332'], ['p2', 'Priority 2', '#ff9800'], ['p3', 'Priority 3', '#2196f3'], ['p4', 'No Priority', '#bbb']].map(([val, label, color]) => (
-                      <TouchableOpacity
-                        key={val}
-                        style={styles.prioritySelectorOption}
-                        onPress={() => { setPriority(val as any); setShowPrioritySelector(false); }}
-                      >
-                        <Ionicons name="flag" size={15} color={color as string} style={{ marginRight: 6 }} />
-                        <Text style={{ color: '#fff', fontSize: 13 }}>{label}</Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                )}
               </View>
-              <TouchableOpacity onPress={addTodo} style={styles.modalAddBtn}>
-                <Ionicons name="arrow-up" size={16} color="#fff" />
-              </TouchableOpacity>
             </View>
-          </View>
-        </KeyboardAvoidingView>
+          </KeyboardAvoidingView>
+        </View>
       </Modal>
     </View>
   );

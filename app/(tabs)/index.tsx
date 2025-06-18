@@ -19,7 +19,7 @@ export default function Index() {
   const colors = useTheme();
   const styles = getStyles(colors);
 
-  const { todos, addTodo, updateTodo, toggleTodoCompleted, deleteTodo, reload } = useTodosContext();
+  const { todos, addTodo, updateTodo, updateTodoOrder, toggleTodoCompleted, deleteTodo, reload } = useTodosContext();
   
   const [modalVisible, setModalVisible] = useState(false);
   const [editingTodo, setEditingTodo] = useState<Todo | null>(null);
@@ -46,7 +46,11 @@ export default function Index() {
     setEditingTodo(null);
     setModalVisible(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-  }
+  };
+
+  const handleReorder = async (reorderedTodos: Todo[]) => {
+    await updateTodoOrder(reorderedTodos);
+  };
 
   useFocusEffect(
     useCallback(() => {
@@ -58,14 +62,17 @@ export default function Index() {
     <View style={styles.container}>
       <Text style={styles.today}>Tasks</Text>
       
-      <TodoList
-        todos={activeTodos}
-        onToggleComplete={toggleTodoCompleted}
-        onDelete={deleteTodo}
-        onStartEdit={handleStartEdit}
-        onReload={reload}
-        emptyMessage="No tasks yet. Add one!"
-      />
+      <View style={styles.listWrapper}>
+        <TodoList
+          todos={activeTodos}
+          onToggleComplete={toggleTodoCompleted}
+          onDelete={deleteTodo}
+          onStartEdit={handleStartEdit}
+          onReload={reload}
+          onReorder={handleReorder}
+          emptyMessage="No tasks yet. Add one!"
+        />
+      </View>
       
       <AddTodoButton onPress={handleOpenAddModal} />
       
@@ -86,6 +93,10 @@ const getStyles = (colors: ThemeColors) => StyleSheet.create({
     backgroundColor: colors.background,
     paddingTop: height * 0.12,
     paddingHorizontal: 20,
+  },
+  listWrapper: {
+    flex: 1,
+    marginBottom: 80, // Space for the AddTodoButton
   },
   today: {
     color: colors.text,

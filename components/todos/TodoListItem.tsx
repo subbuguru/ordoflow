@@ -22,11 +22,13 @@ interface TodoListItemProps {
   onDelete: (id: string) => Promise<void>;
   onStartEdit: (todo: Todo) => void;
   onReload: () => void;
+  onDrag?: () => void;
+  isActive?: boolean;
 }
 
 const SWIPE_THRESHOLD = -100;
 
-export function TodoListItem({ item, onToggleComplete, onDelete, onStartEdit, onReload }: TodoListItemProps) {
+export function TodoListItem({ item, onToggleComplete, onDelete, onStartEdit, onReload, onDrag, isActive }: TodoListItemProps) {
   const colors = useTheme();
   const styles = getStyles(colors);
 
@@ -45,7 +47,7 @@ export function TodoListItem({ item, onToggleComplete, onDelete, onStartEdit, on
       itemScale.value = withTiming(1);
       setIsVisuallyCompleting(false);
     }
-  }, [item.completed]);
+  }, [item.completed, translateX, itemOpacity, itemScale]);
 
   const panGesture = Gesture.Pan()
     .onUpdate((event) => {
@@ -144,6 +146,15 @@ export function TodoListItem({ item, onToggleComplete, onDelete, onStartEdit, on
                   <Text style={styles.todoDescription}>{item.description}</Text>
                 )}
               </View>
+              {onDrag && (
+                <TouchableOpacity 
+                  onLongPress={onDrag}
+                  style={[styles.dragHandle, isActive && styles.dragHandleActive]}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                >
+                  <Ionicons name="reorder-three-outline" size={20} color={colors.textSecondary} />
+                </TouchableOpacity>
+              )}
             </Pressable>
           </Animated.View>
         </GestureDetector>
@@ -199,4 +210,13 @@ const getStyles = (colors: ThemeColors) =>
     todoText: { color: colors.text, fontSize: 16 },
     todoTextCompleted: { textDecorationLine: 'line-through', color: colors.textSecondary },
     todoDescription: { color: colors.textSecondary, fontSize: 13, marginTop: 2 },
+    dragHandle: {
+      padding: 8,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    dragHandleActive: {
+      backgroundColor: colors.border,
+      borderRadius: 8,
+    },
   });

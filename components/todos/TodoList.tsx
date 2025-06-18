@@ -1,5 +1,6 @@
 import React from 'react';
-import { FlatList, StyleSheet, Text } from 'react-native';
+import { StyleSheet, Text } from 'react-native';
+import DraggableFlatList, { RenderItemParams } from 'react-native-draggable-flatlist';
 import { Colors } from '../../constants/Colors';
 import { Todo } from '../../hooks/TodosContext';
 import { useTheme } from '../../hooks/useTheme';
@@ -13,26 +14,36 @@ interface TodoListProps {
   onDelete: (id: string) => Promise<void>;
   onStartEdit: (todo: Todo) => void;
   onReload: () => void;
+  onReorder?: (reorderedTodos: Todo[]) => Promise<void>;
   emptyMessage: string;
 }
 
-export function TodoList({ todos, onToggleComplete, onDelete, onStartEdit, onReload, emptyMessage }: TodoListProps) {
+export function TodoList({ todos, onToggleComplete, onDelete, onStartEdit, onReload, onReorder, emptyMessage }: TodoListProps) {
   const colors = useTheme();
   const styles = getStyles(colors);
 
+  const renderItem = ({ item, drag, isActive }: RenderItemParams<Todo>) => (
+    <TodoListItem
+      item={item}
+      onToggleComplete={onToggleComplete}
+      onDelete={onDelete}
+      onStartEdit={onStartEdit}
+      onReload={onReload}
+      onDrag={drag}
+      isActive={isActive}
+    />
+  );
+
   return (
-    <FlatList
+    <DraggableFlatList
       data={todos}
       keyExtractor={(item) => item.id}
-      renderItem={({ item }) => (
-        <TodoListItem
-          item={item}
-          onToggleComplete={onToggleComplete}
-          onDelete={onDelete}
-          onStartEdit={onStartEdit}
-          onReload={onReload}
-        />
-      )}
+      renderItem={renderItem}
+      onDragEnd={({ data }) => {
+        if (onReorder) {
+          onReorder(data);
+        }
+      }}
       ListEmptyComponent={<Text style={styles.empty}>{emptyMessage}</Text>}
       contentContainerStyle={todos.length === 0 ? styles.emptyContainer : undefined}
     />

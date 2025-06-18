@@ -1,3 +1,4 @@
+import * as Haptics from 'expo-haptics';
 import React from 'react';
 import { StyleSheet, Text } from 'react-native';
 import DraggableFlatList, { RenderItemParams } from 'react-native-draggable-flatlist';
@@ -29,7 +30,8 @@ export function TodoList({ todos, onToggleComplete, onDelete, onStartEdit, onRel
       onDelete={onDelete}
       onStartEdit={onStartEdit}
       onReload={onReload}
-      onDrag={drag}
+      // FIX 3: Conditionally pass the drag function only if onReorder is provided.
+      onDrag={onReorder ? drag : undefined}
       isActive={isActive}
     />
   );
@@ -39,6 +41,7 @@ export function TodoList({ todos, onToggleComplete, onDelete, onStartEdit, onRel
       data={todos}
       keyExtractor={(item) => item.id}
       renderItem={renderItem}
+      onDragBegin={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)}
       onDragEnd={({ data }) => {
         if (onReorder) {
           onReorder(data);
@@ -54,13 +57,10 @@ const getStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     emptyContainer: {
       flexGrow: 1,
-      // We removed `justifyContent: 'center'` which was pushing it to the middle.
-      // Now we'll just push it down from the top.
-      paddingTop: '25%', // Pushes the text down from the top of the list area
+      paddingTop: '25%',
     },
     empty: {
       color: colors.textSecondary,
       textAlign: 'center',
-      // We removed the extra margin from the text itself.
     },
   });

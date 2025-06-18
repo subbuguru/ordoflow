@@ -13,26 +13,21 @@ import {
   View,
 } from 'react-native';
 import { TodoList } from '../../components/todos/TodoList';
-import { Colors } from '../../constants/Colors'; // <-- ADDED THIS IMPORT
-import { Todo, useTodosContext } from '../../hooks/TodosContext';
+import { Colors } from '../../constants/Colors';
+import { useTodosContext } from '../../hooks/TodosContext';
 import { useTheme } from '../../hooks/useTheme';
 
 const { height } = Dimensions.get('window');
 
-// Define the type for our theme colors object
-type ThemeColors = typeof Colors.light; // <-- ADDED THIS TYPE DEFINITION
+type ThemeColors = typeof Colors.light;
 
 export default function Completed() {
   const colors = useTheme();
   const styles = getStyles(colors);
 
-  const { todos, toggleTodoCompleted, deleteTodo, updateTodoOrder, deleteAllCompleted, reload } = useTodosContext();
+  const { todos, toggleTodoCompleted, deleteTodo, deleteAllCompleted, reload } = useTodosContext();
 
   const completedTodos = todos.filter((t) => t.completed);
-
-  const handleReorder = async (reorderedTodos: Todo[]) => {
-    await updateTodoOrder(reorderedTodos);
-  };
 
   const confirmDeleteAll = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -87,22 +82,19 @@ export default function Completed() {
         )}
       </View>
 
-      <View style={styles.listWrapper}>
-        <TodoList
-          todos={completedTodos}
-          onToggleComplete={toggleTodoCompleted}
-          onDelete={deleteTodo}
-          onStartEdit={() => {}}
-          onReload={reload}
-          onReorder={handleReorder}
-          emptyMessage="No completed tasks yet."
-        />
-      </View>
+      <TodoList
+        todos={completedTodos}
+        onToggleComplete={toggleTodoCompleted}
+        onDelete={deleteTodo}
+        onStartEdit={() => {}}
+        onReload={reload}
+        // FIX 3: By not passing the `onReorder` prop, the drag handle will not be rendered.
+        emptyMessage="No completed tasks yet."
+      />
     </View>
   );
 }
 
-// Corrected the function signature here to include the explicit type
 const getStyles = (colors: ThemeColors) => StyleSheet.create({
   container: {
     flex: 1,
@@ -115,9 +107,6 @@ const getStyles = (colors: ThemeColors) => StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 8,
-  },
-  listWrapper: {
-    flex: 1,
   },
   today: {
     color: colors.text,

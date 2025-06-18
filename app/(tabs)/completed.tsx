@@ -1,3 +1,4 @@
+// app/(tabs)/completed.tsx
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
@@ -14,16 +15,23 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
+import { Colors } from '../../constants/Colors'; // Import for type definition
 import { Todo, useTodosContext } from '../../hooks/TodosContext';
+import { useTheme } from '../../hooks/useTheme'; // Import the theme hook
 
 const { height } = Dimensions.get('window');
 
+// Type for our color palette
+type ThemeColors = typeof Colors.light;
+
 export default function Completed() {
+  const colors = useTheme(); // Use the hook
+  const styles = getStyles(colors); // Generate styles with current theme colors
+
   const { todos, toggleTodoCompleted, deleteTodo, deleteAllCompleted, reload } = useTodosContext();
   const [rowAnimValues, setRowAnimValues] = useState<{ [id: string]: Animated.Value }>({});
   const [completingId, setCompletingId] = useState<string | null>(null);
 
-  // Only show completed todos
   const completedTodos = todos.filter((t: Todo) => t.completed);
 
   useEffect(() => {
@@ -52,7 +60,6 @@ export default function Completed() {
       setTimeout(() => {
         setCompletingId(null);
         reload();
-        // Reset animation value for future use
         if (animValue) animValue.setValue(1);
       }, 50);
     });
@@ -112,7 +119,7 @@ export default function Completed() {
         <Text style={styles.today}>Completed</Text>
         {completedTodos.length > 0 && (
           <TouchableOpacity onPress={showHeaderMenu} style={styles.menuBtn}>
-            <Ionicons name="ellipsis-horizontal-outline" size={26} color="#e44332" style={styles.menuIconOutline} />
+            <Ionicons name="ellipsis-horizontal-outline" size={26} color={colors.tint} />
           </TouchableOpacity>
         )}
       </View>
@@ -120,7 +127,6 @@ export default function Completed() {
         data={completedTodos}
         keyExtractor={item => String(item.id)}
         renderItem={({ item }) => {
-          const isCompleting = completingId === item.id;
           const animStyle = {
             opacity: rowAnimValues[item.id],
             transform: [
@@ -170,18 +176,14 @@ export default function Completed() {
                     item.priority === 'p3' && styles.circleP3,
                     item.priority === 'p4' && styles.circleP4,
                     item.completed && [
-                      item.priority === 'p1' && styles.circleCompletedP1,
-                      item.priority === 'p2' && styles.circleCompletedP2,
-                      item.priority === 'p3' && styles.circleCompletedP3,
-                      item.priority === 'p4' && styles.circleCompletedP4,
+                      styles.circleCompletedP1,
+                      styles.circleCompletedP2,
+                      styles.circleCompletedP3,
+                      styles.circleCompletedP4,
                     ]
                   ]}
-                  onPress={() => {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    handleUncomplete(item);
-                  }}
+                  onPress={() => handleUncomplete(item)}
                 >
-                  {/* Animate the checkmark scale as well, for consistency */}
                   <Animated.View style={{ transform: [{ scale: rowAnimValues[item.id] || 1 }] }}>
                     {item.completed && (
                       <Ionicons
@@ -210,10 +212,10 @@ export default function Completed() {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors: ThemeColors) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#181818',
+    backgroundColor: colors.background,
     paddingTop: height * 0.12,
     paddingHorizontal: 20,
   },
@@ -224,94 +226,57 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   today: {
-    color: '#fff',
+    color: colors.text,
     fontSize: 36,
     fontWeight: 'bold',
     marginBottom: 8,
   },
   menuBtn: {
     padding: 8,
-    borderRadius: 16,
-    backgroundColor: 'transparent',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  menuIconOutline: {
-    // No fill, just color
   },
   todoRow: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#222',
+    borderBottomColor: colors.border,
   },
   circle: {
     width: 26,
     height: 26,
     borderRadius: 13,
     borderWidth: 2,
-    borderColor: '#fff',
     marginRight: 16,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'transparent',
-    opacity: 1,
   },
-  circleP1: {
-    borderColor: '#e44332',
-    backgroundColor: 'rgba(228,67,50,0.15)',
-    opacity: 1,
-  },
-  circleP2: {
-    borderColor: '#ff9800',
-    backgroundColor: 'rgba(255,152,0,0.15)',
-    opacity: 1,
-  },
-  circleP3: {
-    borderColor: '#2196f3',
-    backgroundColor: 'rgba(33,150,243,0.15)',
-    opacity: 1,
-  },
-  circleP4: {
-    borderColor: '#bbb',
-    backgroundColor: 'transparent',
-    opacity: 1,
-  },
-  circleCompletedP1: {
-    backgroundColor: '#e44332',
-    borderColor: '#e44332',
-  },
-  circleCompletedP2: {
-    backgroundColor: '#ff9800',
-    borderColor: '#ff9800',
-  },
-  circleCompletedP3: {
-    backgroundColor: '#2196f3',
-    borderColor: '#2196f3',
-  },
-  circleCompletedP4: {
-    backgroundColor: '#bbb',
-    borderColor: '#bbb',
-  },
+  circleP1: { borderColor: colors.p1, backgroundColor: colors.p1_bg },
+  circleP2: { borderColor: colors.p2, backgroundColor: colors.p2_bg },
+  circleP3: { borderColor: colors.p3, backgroundColor: colors.p3_bg },
+  circleP4: { borderColor: colors.p4, backgroundColor: colors.p4_bg },
+  circleCompletedP1: { backgroundColor: colors.p1, borderColor: colors.p1 },
+  circleCompletedP2: { backgroundColor: colors.p2, borderColor: colors.p2 },
+  circleCompletedP3: { backgroundColor: colors.p3, borderColor: colors.p3 },
+  circleCompletedP4: { backgroundColor: colors.p4, borderColor: colors.p4 },
   todoTextContainer: {
     flex: 1,
   },
   todoText: {
-    color: '#fff',
+    color: colors.text,
     fontSize: 16,
   },
   todoTextCompleted: {
     textDecorationLine: 'line-through',
-    color: '#888',
+    color: colors.textSecondary,
   },
   todoDescription: {
-    color: '#888',
+    color: colors.textSecondary,
     fontSize: 13,
     marginTop: 2,
   },
   empty: {
-    color: '#888',
+    color: colors.textSecondary,
     textAlign: 'center',
     marginTop: 40,
   },

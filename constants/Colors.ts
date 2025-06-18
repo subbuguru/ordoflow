@@ -1,26 +1,59 @@
-/**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
- */
+// constants/Colors.ts
 
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#fff';
+// --- BRAND & PRIORITY COLORS ---
+// These colors are consistent across both light and dark themes.
+const primary = '#e44332';
+const p1 = '#e44332';
+const p2 = '#ff9800';
+const p3 = '#2196f3';
 
 export const Colors = {
   light: {
+    // General
     text: '#11181C',
-    background: '#fff',
-    tint: tintColorLight,
-    icon: '#687076',
+    textSecondary: '#687076',
+    background: '#f2f2f7', // iOS default system background
+    card: '#ffffff',
+    cardSecondary: '#f9f9f9',
+    border: '#dcdcdc',
+    tint: primary,
+
+    // Tab Bar
     tabIconDefault: '#687076',
-    tabIconSelected: tintColorLight,
+    tabIconSelected: primary,
+
+    // Priority Colors
+    p1,
+    p2,
+    p3,
+    p4: '#8e8e93', // A slightly darker gray for light mode
+    p1_bg: 'rgba(228, 67, 50, 0.1)',
+    p2_bg: 'rgba(255, 152, 0, 0.1)',
+    p3_bg: 'rgba(33, 150, 243, 0.1)',
+    p4_bg: 'transparent',
   },
   dark: {
+    // General
     text: '#ECEDEE',
-    background: '#151718',
-    tint: tintColorDark,
-    icon: '#9BA1A6',
+    textSecondary: '#888888',
+    background: '#181818',
+    card: '#222222',
+    cardSecondary: '#292929',
+    border: '#333333',
+    tint: primary,
+
+    // Tab Bar
     tabIconDefault: '#9BA1A6',
-    tabIconSelected: tintColorDark,
+    tabIconSelected: primary,
+
+    // Priority Colors
+    p1,
+    p2,
+    p3,
+    p4: '#bbb',
+    p1_bg: 'rgba(228, 67, 50, 0.15)',
+    p2_bg: 'rgba(255, 152, 0, 0.15)',
+    p3_bg: 'rgba(33, 150, 243, 0.15)',
+    p4_bg: 'transparent',
   },
 };

@@ -2,15 +2,15 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
 import {
-    KeyboardAvoidingView,
-    Modal,
-    Platform,
-    Pressable,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { Colors } from '../../constants/Colors';
 import { useTheme } from '../../hooks/useTheme';
@@ -69,7 +69,7 @@ export function EditTodoModal({ visible, onClose, onSave, todoToEdit }: any) {
             <View style={styles.modalContent}>
               <TextInput
                 style={styles.inputTitle}
-                placeholder="e.g., Finish sales report"
+                placeholder="Title"
                 value={input}
                 onChangeText={setInput}
                 autoFocus

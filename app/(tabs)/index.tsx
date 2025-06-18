@@ -2,19 +2,19 @@ import { Ionicons } from '@expo/vector-icons';
 import * as SQLite from 'expo-sqlite';
 import React, { useEffect, useState } from 'react';
 import {
-    ActionSheetIOS,
-    Alert,
-    Dimensions,
-    FlatList,
-    KeyboardAvoidingView,
-    Modal,
-    Platform,
-    Pressable,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  ActionSheetIOS,
+  Alert,
+  Dimensions,
+  FlatList,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
 
 interface Todo {
@@ -30,7 +30,7 @@ interface Todo {
 const db = SQLite.openDatabaseSync('todoit.db');
 const { height } = Dimensions.get('window');
 
-export default function HomeScreen() {
+export default function Tabs() {
   // Remove inboxListId and lists logic
   const [todos, setTodos] = useState<Todo[]>([]);
   const [modalVisible, setModalVisible] = useState(false);

@@ -3,12 +3,13 @@
 # Ordoflow
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/0ccecdae-1900-4e3b-aa63-0d6bc02552a4" width="150" />
-  <img src="https://github.com/user-attachments/assets/0d927ad4-99d5-4052-a792-721c6d49d683" width="150" />
-  <img src="https://github.com/user-attachments/assets/983cc126-e63d-4f49-94bf-6519de6956b6" width="150" />
-  <img src="https://github.com/user-attachments/assets/742b10ec-9169-4cf7-86a5-cb3e662706a8" width="150" />
-  <img src="https://github.com/user-attachments/assets/8cc71106-03d6-42d2-998c-fb1f19e59679" width="150" />
+  <img src="https://github.com/user-attachments/assets/017d0b19-a422-4b64-a997-8b3bd26a1c67" width="150" />
+  <img src="https://github.com/user-attachments/assets/1262eb9e-faf3-4702-b85b-1294b4d78988" width="150" />
+  <img src="https://github.com/user-attachments/assets/30f309a6-53f8-4b60-b6f2-11537a11b470" width="150" />
+  <img src="https://github.com/user-attachments/assets/28fa356c-eea2-46cb-b543-0cefb03c1d2b" width="150" />
+  <img src="https://github.com/user-attachments/assets/07d01ee1-dc88-47e4-a98f-4d9937b1a4d8" width="150" />
 </p>
+
 
 
 Ordoflow is a todo list application built with Expo and React-Native. It was built as an experiment "vibe-coding" with Google Gemini 2.5 Pro. This means all the code was produced by an AI Large Language Model. Use at your own risk. Even this readme.md is AI generated...

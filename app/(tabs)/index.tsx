@@ -29,12 +29,10 @@ interface Todo {
   description?: string;
 }
 
-// Use only a single table for tasks (todos), remove lists table logic
 const db = SQLite.openDatabaseSync('todoit.db');
 const { height } = Dimensions.get('window');
 
 export default function Tabs() {
-  // Remove inboxListId and lists logic
   const [todos, setTodos] = useState<Todo[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [input, setInput] = useState('');
@@ -42,9 +40,13 @@ export default function Tabs() {
   const [priority, setPriority] = useState<'p1' | 'p2' | 'p3' | 'p4'>('p4');
   const [showPrioritySelector, setShowPrioritySelector] = useState(false);
   const [editingTodo, setEditingTodo] = useState<Todo | null>(null);
-  const [animValues, setAnimValues] = useState<{ [id: string]: Animated.Value }>({});
 
-  // Create table for todos only
+  // NEW: State to hold animation values for each row (opacity, scale)
+  const [rowAnimValues, setRowAnimValues] = useState<{ [id: string]: Animated.Value }>({});
+  // NEW: State to track the ID of the item currently being animated for completion
+  const [completingId, setCompletingId] = useState<string | null>(null);
+
+
   useEffect(() => {
     db.withTransactionAsync(async () => {
       await db.execAsync(
@@ -60,7 +62,21 @@ export default function Tabs() {
     }).then(loadTodos);
   }, []);
 
-  // Save or update todo to SQLite
+  // UPDATED: When todos are loaded, initialize their animation values.
+  useEffect(() => {
+    const newAnimValues: { [id: string]: Animated.Value } = {};
+    todos.forEach(todo => {
+      // If an animation value doesn't exist for a todo, create one.
+      if (!rowAnimValues[todo.id]) {
+        newAnimValues[todo.id] = new Animated.Value(1);
+      }
+    });
+    // Combine new values with existing ones
+    if (Object.keys(newAnimValues).length > 0) {
+      setRowAnimValues(prev => ({ ...prev, ...newAnimValues }));
+    }
+  }, [todos]);
+
   const saveTodo = async () => {
     if (!input.trim()) return;
     if (editingTodo) {
@@ -86,7 +102,6 @@ export default function Tabs() {
     loadTodos();
   };
 
-  // Load todos from SQLite
   const loadTodos = React.useCallback(() => {
     db.withTransactionAsync(async () => {
       const todosRaw = await db.getAllAsync<any>(`SELECT * FROM todos WHERE completed = 0 ORDER BY id DESC;`);
@@ -99,15 +114,16 @@ export default function Tabs() {
     });
   }, []);
 
-  // Toggle completion in SQLite
-  const toggleTodo = async (id: string, completed: boolean) => {
+  const toggleTodo = async (id: string) => {
+    // We only toggle to 'completed' here, so we set it to 1.
     await db.withTransactionAsync(async () => {
-      await db.runAsync(`UPDATE todos SET completed = ? WHERE id = ?`, [completed ? 0 : 1, Number(id)]);
+      await db.runAsync(`UPDATE todos SET completed = 1 WHERE id = ?`, [Number(id)]);
     });
+    // Reset completing ID and reload the list from the database
+    setCompletingId(null);
     await loadTodos();
   };
 
-  // Add deleteTodo function
   const deleteTodo = async (id: string) => {
     await db.withTransactionAsync(async () => {
       await db.runAsync(`DELETE FROM todos WHERE id = ?`, [Number(id)]);
@@ -122,26 +138,35 @@ export default function Tabs() {
     setPriority(todo.priority);
     setModalVisible(true);
   };
+  
+  // NEW: The main function to handle the completion animation and logic
+  const handleComplete = (item: Todo) => {
+    // Don't allow another completion while one is in progress
+    if (completingId) return;
 
-  // Animate completion toggle
-  const animateToggle = (id: string, completed: boolean, cb: () => void) => {
-    if (!animValues[id]) {
-      setAnimValues(v => ({ ...v, [id]: new Animated.Value(1) }));
-    }
-    const toValue = completed ? 0.7 : 1;
-    Animated.sequence([
-      Animated.timing(animValues[id] || new Animated.Value(1), {
-        toValue,
-        duration: 120,
-        useNativeDriver: true,
-      }),
-      Animated.timing(animValues[id] || new Animated.Value(1), {
-        toValue: 1,
-        duration: 120,
-        useNativeDriver: true,
-      })
-    ]).start(cb);
+    // Trigger haptic feedback
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    
+    // Set the completing ID to immediately apply completed styles
+    setCompletingId(item.id);
+
+    // Get the specific animation value for this row
+    const animValue = rowAnimValues[item.id];
+
+    // Animate the row: fade out and shrink
+    Animated.timing(animValue, {
+      toValue: 0,
+      duration: 350, // A bit longer to appreciate the fade
+      useNativeDriver: true, // Use native driver for smoother animation
+    }).start(() => {
+      // After the animation is complete, update the database
+      toggleTodo(item.id);
+      // We don't need to reset the animValue to 1 here, because the item
+      // will be removed from the `todos` state entirely. If it's ever
+      // un-completed, it will be a new item in the list and get a new animValue.
+    });
   };
+
 
   useFocusEffect(
     React.useCallback(() => {
@@ -156,72 +181,92 @@ export default function Tabs() {
       <FlatList
         data={todos}
         keyExtractor={item => String(item.id)}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={styles.todoRow}
-            onPress={() => startEditTodo(item)}
-            onLongPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-              if (Platform.OS === 'ios') {
-                ActionSheetIOS.showActionSheetWithOptions(
-                  {
-                    options: ['Cancel', 'Delete Task'],
-                    destructiveButtonIndex: 1,
-                    cancelButtonIndex: 0,
-                  },
-                  buttonIndex => {
-                    if (buttonIndex === 1) deleteTodo(item.id);
+        renderItem={({ item }) => {
+          // UPDATED: Check if the current item is the one being completed
+          const isCompleting = completingId === item.id;
+          const animStyle = {
+            opacity: rowAnimValues[item.id],
+            transform: [
+              {
+                scale: rowAnimValues[item.id] ? rowAnimValues[item.id].interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [0.85, 1],
+                }) : 1,
+              },
+            ],
+          };
+
+          return (
+            // UPDATED: Wrap the row in an Animated.View to apply the animation styles
+            <Animated.View style={animStyle}>
+              <TouchableOpacity
+                style={styles.todoRow}
+                onPress={() => startEditTodo(item)}
+                onLongPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                  if (Platform.OS === 'ios') {
+                    ActionSheetIOS.showActionSheetWithOptions(
+                      {
+                        options: ['Cancel', 'Delete Task'],
+                        destructiveButtonIndex: 1,
+                        cancelButtonIndex: 0,
+                      },
+                      buttonIndex => {
+                        if (buttonIndex === 1) deleteTodo(item.id);
+                      }
+                    );
+                  } else {
+                    Alert.alert(
+                      'Delete Task',
+                      'Are you sure you want to delete this task?',
+                      [
+                        { text: 'Cancel', style: 'cancel' },
+                        { text: 'Delete', style: 'destructive', onPress: () => deleteTodo(item.id) },
+                      ]
+                    );
                   }
-                );
-              } else {
-                Alert.alert(
-                  'Delete Task',
-                  'Are you sure you want to delete this task?',
-                  [
-                    { text: 'Cancel', style: 'cancel' },
-                    { text: 'Delete', style: 'destructive', onPress: () => deleteTodo(item.id) },
-                  ]
-                );
-              }
-            }}
-          >
-            <TouchableOpacity
-              style={[styles.circle,
-                item.priority === 'p1' && styles.circleP1,
-                item.priority === 'p2' && styles.circleP2,
-                item.priority === 'p3' && styles.circleP3,
-                item.priority === 'p4' && styles.circleP4,
-                item.completed && [
-                  item.priority === 'p1' && styles.circleCompletedP1,
-                  item.priority === 'p2' && styles.circleCompletedP2,
-                  item.priority === 'p3' && styles.circleCompletedP3,
-                  item.priority === 'p4' && styles.circleCompletedP4,
-                ]
-              ]}
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                animateToggle(item.id, item.completed, () => toggleTodo(item.id, item.completed));
-              }}
-            >
-              <Animated.View style={{ transform: [{ scale: animValues[item.id] || 1 }] }}>
-                {item.completed && (
-                  <Ionicons
-                    name="checkmark"
-                    size={16}
-                    color="#fff"
-                    style={{ backgroundColor: 'transparent' }}
-                  />
-                )}
-              </Animated.View>
-            </TouchableOpacity>
-            <View style={styles.todoTextContainer}>
-              <Text style={[styles.todoText, item.completed && styles.todoTextCompleted]}>{item.text}</Text>
-              {!!item.description && (
-                <Text style={styles.todoDescription}>{item.description}</Text>
-              )}
-            </View>
-          </TouchableOpacity>
-        )}
+                }}
+              >
+                <TouchableOpacity
+                  // UPDATED: The circle press now triggers our new animation handler
+                  onPress={() => handleComplete(item)}
+                  style={[styles.circle,
+                    item.priority === 'p1' && styles.circleP1,
+                    item.priority === 'p2' && styles.circleP2,
+                    item.priority === 'p3' && styles.circleP3,
+                    item.priority === 'p4' && styles.circleP4,
+                    // UPDATED: Apply completed styles if the item is marked completed OR is currently animating
+                    (item.completed || isCompleting) && [
+                      item.priority === 'p1' && styles.circleCompletedP1,
+                      item.priority === 'p2' && styles.circleCompletedP2,
+                      item.priority === 'p3' && styles.circleCompletedP3,
+                      item.priority === 'p4' && styles.circleCompletedP4,
+                    ]
+                  ]}
+                >
+                  {/* UPDATED: Show the checkmark if the item is completed OR is animating */ }
+                  {(item.completed || isCompleting) && (
+                    <Ionicons
+                      name="checkmark"
+                      size={16}
+                      color="#fff"
+                      style={{ backgroundColor: 'transparent' }}
+                    />
+                  )}
+                </TouchableOpacity>
+                <View style={styles.todoTextContainer}>
+                  {/* UPDATED: Apply strikethrough style if item is completed OR is animating */ }
+                  <Text style={[styles.todoText, (item.completed || isCompleting) && styles.todoTextCompleted]}>
+                    {item.text}
+                  </Text>
+                  {!!item.description && (
+                    <Text style={styles.todoDescription}>{item.description}</Text>
+                  )}
+                </View>
+              </TouchableOpacity>
+            </Animated.View>
+          );
+        }}
         ListEmptyComponent={<Text style={styles.empty}>No tasks yet</Text>}
         contentContainerStyle={{ flexGrow: 1 }}
       />
@@ -229,7 +274,7 @@ export default function Tabs() {
         <Ionicons name="add" size={36} color="#fff" />
       </TouchableOpacity>
 
-      {/* --- UPDATED MODAL --- */}
+      {/* --- MODAL (No Changes Needed) --- */}
       <Modal
         visible={modalVisible}
         animationType="slide"
@@ -282,7 +327,6 @@ export default function Tabs() {
               </View>
             </View>
           </KeyboardAvoidingView>
-          {/* Priority Selector as Bottom Sheet */}
           <Modal
             visible={showPrioritySelector}
             animationType="slide"
@@ -316,6 +360,7 @@ export default function Tabs() {
   );
 }
 
+// Styles remain the same
 const styles = StyleSheet.create({
   container: {
     flex: 1,

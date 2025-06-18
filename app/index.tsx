@@ -19,6 +19,8 @@ import {
 
 
 
+
+
     StyleSheet,
     Text,
     TextInput,
@@ -35,28 +37,22 @@ interface Todo {
   description?: string;
 }
 
-// Use openDatabaseSync for compatibility with new expo-sqlite
+// Use only a single table for tasks (todos), remove lists table logic
 const db = SQLite.openDatabaseSync('todoit.db');
 const { height } = Dimensions.get('window');
 
 export default function HomeScreen() {
+  // Remove inboxListId and lists logic
   const [todos, setTodos] = useState<Todo[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [input, setInput] = useState('');
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState<'p1' | 'p2' | 'p3' | 'p4'>('p4');
   const [showPrioritySelector, setShowPrioritySelector] = useState(false);
-  const [inboxListId, setInboxListId] = useState<number | null>(null);
 
-  // Create tables and ensure Inbox list exists
+  // Create table for todos only
   useEffect(() => {
     db.withTransactionAsync(async () => {
-      await db.execAsync(
-        `CREATE TABLE IF NOT EXISTS lists (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          name TEXT NOT NULL
-        );`
-      );
       await db.execAsync(
         `CREATE TABLE IF NOT EXISTS todos (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -64,49 +60,40 @@ export default function HomeScreen() {
           description TEXT,
           completed INTEGER,
           date TEXT,
-          priority TEXT,
-          list_id INTEGER,
-          FOREIGN KEY(list_id) REFERENCES lists(id)
+          priority TEXT
         );`
       );
-      await db.execAsync(
-        `INSERT INTO lists (name) SELECT 'Inbox' WHERE NOT EXISTS (SELECT 1 FROM lists WHERE name='Inbox');`
-      );
-      // After tables created, fetch Inbox list id
-      const result = await db.getAllAsync(`SELECT id FROM lists WHERE name='Inbox' LIMIT 1;`);
-      if (Array.isArray(result) && result.length > 0 && typeof result[0] === 'object' && result[0] !== null && 'id' in result[0]) setInboxListId((result[0] as {id: number}).id);
-    });
+    }).then(loadTodos);
   }, []);
 
-  // Add type annotations for SQLite transaction and result sets
   // Save todo to SQLite
-  const addTodo = () => {
-    if (!input.trim() || inboxListId == null) return;
-    db.withTransactionAsync(async () => {
+  const addTodo = async () => {
+    if (!input.trim()) return;
+    await db.withTransactionAsync(async () => {
       await db.runAsync(
-        `INSERT INTO todos (text, description, completed, date, priority, list_id) VALUES (?, ?, ?, ?, ?, ?);`,
-        [input, description, 0, new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), priority, inboxListId]
+        `INSERT INTO todos (text, description, completed, date, priority) VALUES (?, ?, ?, ?, ?);`,
+        [input, description, 0, new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), priority]
       );
-      loadTodos();
     });
     setInput('');
     setDescription('');
     setPriority('p4');
     setModalVisible(false);
+    loadTodos();
   };
 
+  // Load todos from SQLite
   const loadTodos = React.useCallback(() => {
-    if (inboxListId == null) return;
     db.withTransactionAsync(async () => {
-      const todos = await db.getAllAsync<Todo>(`SELECT * FROM todos WHERE list_id = ?;`, [inboxListId]);
+      const todos = await db.getAllAsync<Todo>(`SELECT * FROM todos ORDER BY id DESC;`);
       setTodos(todos as Todo[]);
     });
-  }, [inboxListId]);
+  }, []);
 
-  // Reload todos when Inbox list id changes
+  // Reload todos on mount
   useEffect(() => {
     loadTodos();
-  }, [inboxListId, loadTodos]);
+  }, [loadTodos]);
 
   const toggleTodo = (id: string) => {
     setTodos(prevTodos => prevTodos.filter(todo => todo.id !== id));
@@ -117,7 +104,7 @@ export default function HomeScreen() {
       <Text style={styles.today}>Tasks</Text>
       <FlatList
         data={todos}
-        keyExtractor={item => item.id}
+        keyExtractor={item => String(item.id)}
         renderItem={({ item }) => (
           <TouchableOpacity style={styles.todoRow} onPress={() => toggleTodo(item.id)}>
             <View style={[styles.circle,

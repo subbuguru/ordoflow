@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
+import * as Haptics from 'expo-haptics';
 import * as SQLite from 'expo-sqlite';
 import React, { useState } from 'react';
 import {
@@ -58,6 +59,51 @@ export default function Completed() {
     await loadTodos();
   };
 
+  // Delete all completed todos
+  const deleteAllCompleted = async () => {
+    await db.withTransactionAsync(async () => {
+      await db.runAsync(`DELETE FROM todos WHERE completed = 1`);
+    });
+    await loadTodos();
+  };
+
+  // Show 3-dots menu for header actions
+  const showHeaderMenu = () => {
+    if (Platform.OS === 'ios') {
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          options: ['Cancel', 'Delete All Completed'],
+          destructiveButtonIndex: 1,
+          cancelButtonIndex: 0,
+        },
+        buttonIndex => {
+          if (buttonIndex === 1) confirmDeleteAll();
+        }
+      );
+    } else {
+      Alert.alert(
+        'Options',
+        '',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Delete All Completed', style: 'destructive', onPress: confirmDeleteAll },
+        ]
+      );
+    }
+  };
+
+  // Confirm before deleting all completed
+  const confirmDeleteAll = () => {
+    Alert.alert(
+      'Delete All Completed?',
+      'Are you sure you want to delete all completed tasks? This cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Delete All', style: 'destructive', onPress: deleteAllCompleted },
+      ]
+    );
+  };
+
   useFocusEffect(
     React.useCallback(() => {
       loadTodos();
@@ -67,7 +113,14 @@ export default function Completed() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.today}>Completed</Text>
+      <View style={styles.headerRow}>
+        <Text style={styles.today}>Completed</Text>
+        {todos.length > 0 && (
+          <TouchableOpacity onPress={showHeaderMenu} style={styles.menuBtn}>
+            <Ionicons name="ellipsis-horizontal-outline" size={26} color="#e44332" style={styles.menuIconOutline} />
+          </TouchableOpacity>
+        )}
+      </View>
       <FlatList
         data={todos}
         keyExtractor={item => String(item.id)}
@@ -75,6 +128,7 @@ export default function Completed() {
           <TouchableOpacity
             style={styles.todoRow}
             onLongPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
               if (Platform.OS === 'ios') {
                 ActionSheetIOS.showActionSheetWithOptions(
                   {
@@ -144,11 +198,27 @@ const styles = StyleSheet.create({
     paddingTop: height * 0.12,
     paddingHorizontal: 20,
   },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
   today: {
     color: '#fff',
     fontSize: 36,
     fontWeight: 'bold',
     marginBottom: 8,
+  },
+  menuBtn: {
+    padding: 8,
+    borderRadius: 16,
+    backgroundColor: 'transparent',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  menuIconOutline: {
+    // No fill, just color
   },
   todoRow: {
     flexDirection: 'row',

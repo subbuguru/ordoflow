@@ -139,6 +139,7 @@ export default function Tabs() {
             style={styles.todoRow}
             onPress={() => startEditTodo(item)}
             onLongPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
               if (Platform.OS === 'ios') {
                 ActionSheetIOS.showActionSheetWithOptions(
                   {

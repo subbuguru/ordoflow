@@ -9,6 +9,7 @@ import {
     Pressable // Import Pressable
     ,
 
+
     StyleSheet,
     Text,
     TextInput,
@@ -99,13 +100,10 @@ export default function HomeScreen() {
         onDismiss={() => setShowPrioritySelector(false)}
       >
         <View style={styles.modalContainer}>
-          {/* This Pressable acts as the background overlay. Clicking it closes the modal. */}
           <Pressable
             style={StyleSheet.absoluteFill}
             onPress={() => setModalVisible(false)}
           />
-
-          {/* The content sits on top of the Pressable background */}
           <KeyboardAvoidingView
             behavior={Platform.OS === 'ios' ? 'padding' : undefined}
             style={{ width: '100%' }}
@@ -139,20 +137,6 @@ export default function HomeScreen() {
                       {priority === 'p1' ? 'Priority 1' : priority === 'p2' ? 'Priority 2' : priority === 'p3' ? 'Priority 3' : 'No Priority'}
                     </Text>
                   </TouchableOpacity>
-                  {showPrioritySelector && (
-                    <View style={styles.prioritySelectorContainer}>
-                      {[['p1', 'Priority 1', '#e44332'], ['p2', 'Priority 2', '#ff9800'], ['p3', 'Priority 3', '#2196f3'], ['p4', 'No Priority', '#bbb']].map(([val, label, color]) => (
-                        <TouchableOpacity
-                          key={val}
-                          style={styles.prioritySelectorOption}
-                          onPress={() => { setPriority(val as any); setShowPrioritySelector(false); }}
-                        >
-                          <Ionicons name="flag" size={15} color={color as string} style={{ marginRight: 6 }} />
-                          <Text style={{ color: '#fff', fontSize: 13 }}>{label}</Text>
-                        </TouchableOpacity>
-                      ))}
-                    </View>
-                  )}
                 </View>
                 <TouchableOpacity onPress={addTodo} style={styles.modalAddBtn}>
                   <Ionicons name="arrow-up" size={16} color="#fff" />
@@ -160,6 +144,30 @@ export default function HomeScreen() {
               </View>
             </View>
           </KeyboardAvoidingView>
+          {/* Priority Selector as Bottom Sheet */}
+          <Modal
+            visible={showPrioritySelector}
+            animationType="slide"
+            transparent
+            onRequestClose={() => setShowPrioritySelector(false)}
+          >
+            <Pressable style={styles.bottomSheetOverlay} onPress={() => setShowPrioritySelector(false)} />
+            <View style={styles.bottomSheet}>
+              {[['p1', 'Priority 1', '#e44332'], ['p2', 'Priority 2', '#ff9800'], ['p3', 'Priority 3', '#2196f3'], ['p4', 'No Priority', '#bbb']].map(([val, label, color]) => (
+                <TouchableOpacity
+                  key={val}
+                  style={styles.bottomSheetOption}
+                  onPress={() => { setPriority(val as any); setShowPrioritySelector(false); }}
+                >
+                  <Ionicons name="flag" size={18} color={color as string} style={{ marginRight: 10 }} />
+                  <Text style={{ color: '#fff', fontSize: 16 }}>{label}</Text>
+                </TouchableOpacity>
+              ))}
+              <TouchableOpacity style={styles.bottomSheetCancel} onPress={() => setShowPrioritySelector(false)}>
+                <Text style={styles.bottomSheetCancelText}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
+          </Modal>
         </View>
       </Modal>
     </View>
@@ -268,7 +276,7 @@ const styles = StyleSheet.create({
   inputTitle: {
     backgroundColor: 'transparent',
     color: '#fff',
-    fontSize: 20, // increased size
+    fontSize: 22, // increased size
     marginBottom: 8,
     borderWidth: 0,
     padding: 0,
@@ -277,10 +285,10 @@ const styles = StyleSheet.create({
   inputDescription: {
     backgroundColor: 'transparent',
     color: '#aaa',
-    fontSize: 16,
+    fontSize: 18, // increased size
     borderWidth: 0,
     padding: 0,
-    marginBottom: 32, // increase gap below description
+    marginBottom: 18,
   },
   priorityButton: {
     flexDirection: 'row',
@@ -367,5 +375,45 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     paddingBottom: 10,
     margin: 0,
+  },
+  bottomSheetOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+  },
+  bottomSheet: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#222',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingHorizontal: 24,
+    paddingTop: 18,
+    paddingBottom: 32,
+    zIndex: 100,
+  },
+  bottomSheetOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 18,
+    borderBottomWidth: 0,
+    borderRadius: 12,
+    marginBottom: 10,
+    backgroundColor: '#292929',
+    paddingHorizontal: 10,
+  },
+  bottomSheetCancel: {
+    marginTop: 8,
+    backgroundColor: '#333',
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+  },
+  bottomSheetCancelText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '600',
   },
 });

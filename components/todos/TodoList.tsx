@@ -1,11 +1,13 @@
-import * as Haptics from 'expo-haptics';
-import React from 'react';
-import { StyleSheet, Text } from 'react-native';
-import DraggableFlatList, { RenderItemParams } from 'react-native-draggable-flatlist';
-import { Colors } from '../../constants/Colors';
-import { Todo } from '../../hooks/TodosContext';
-import { useTheme } from '../../hooks/useTheme';
-import { TodoListItem } from './TodoListItem';
+import * as Haptics from "expo-haptics";
+import React from "react";
+import { StyleSheet, Text } from "react-native";
+import DraggableFlatList, {
+  RenderItemParams,
+} from "react-native-draggable-flatlist";
+import { Colors } from "../../constants/Colors";
+import { Todo } from "../../hooks/TodosContext";
+import { useTheme } from "../../hooks/useTheme";
+import { TodoListItem } from "./TodoListItem";
 
 type ThemeColors = typeof Colors.light;
 
@@ -19,7 +21,15 @@ interface TodoListProps {
   emptyMessage: string;
 }
 
-export function TodoList({ todos, onToggleComplete, onDelete, onStartEdit, onReload, onReorder, emptyMessage }: TodoListProps) {
+export function TodoList({
+  todos,
+  onToggleComplete,
+  onDelete,
+  onStartEdit,
+  onReload,
+  onReorder,
+  emptyMessage,
+}: TodoListProps) {
   const colors = useTheme();
   const styles = getStyles(colors);
 
@@ -41,14 +51,18 @@ export function TodoList({ todos, onToggleComplete, onDelete, onStartEdit, onRel
       data={todos}
       keyExtractor={(item) => item.id}
       renderItem={renderItem}
-      onDragBegin={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)}
+      onDragBegin={() =>
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
+      }
       onDragEnd={({ data }) => {
         if (onReorder) {
           onReorder(data);
         }
       }}
       ListEmptyComponent={<Text style={styles.empty}>{emptyMessage}</Text>}
-      contentContainerStyle={todos.length === 0 ? styles.emptyContainer : undefined}
+      contentContainerStyle={
+        todos.length === 0 ? styles.emptyContainer : undefined
+      }
     />
   );
 }
@@ -57,10 +71,10 @@ const getStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     emptyContainer: {
       flexGrow: 1,
-      paddingTop: '25%',
+      paddingTop: "25%",
     },
     empty: {
       color: colors.textSecondary,
-      textAlign: 'center',
+      textAlign: "center",
     },
   });

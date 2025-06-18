@@ -2,10 +2,10 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { GestureHandlerRootView } from 'react-native-gesture-handler'; // 1. IMPORT THE WRAPPER
 import 'react-native-reanimated';
 
 import { TodosProvider } from '@/hooks/TodosContext';
-
 import { useColorScheme } from '@/hooks/useColorScheme';
 
 export default function RootLayout() {
@@ -20,13 +20,16 @@ export default function RootLayout() {
   }
 
   return (
-    <TodosProvider>
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        </Stack>
-        <StatusBar style="auto" />
-      </ThemeProvider>
-    </TodosProvider>
+    // 2. WRAP THE ENTIRE APP WITH THE GestureHandlerRootView
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <TodosProvider>
+        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+          <Stack>
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          </Stack>
+          <StatusBar style="auto" />
+        </ThemeProvider>
+      </TodosProvider>
+    </GestureHandlerRootView>
   );
 }

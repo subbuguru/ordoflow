@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import * as SQLite from 'expo-sqlite';
 import React, { useEffect, useState } from 'react';
 import {
@@ -173,7 +174,7 @@ export default function Tabs() {
         ListEmptyComponent={<Text style={styles.empty}>No tasks yet</Text>}
         contentContainerStyle={{ flexGrow: 1 }}
       />
-      <TouchableOpacity style={styles.addButton} onPress={() => setModalVisible(true)}>
+      <TouchableOpacity style={styles.addButton} onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); setModalVisible(true); }}>
         <Ionicons name="add" size={36} color="#fff" />
       </TouchableOpacity>
 
@@ -361,7 +362,7 @@ const styles = StyleSheet.create({
   addButton: {
     position: 'absolute',
     right: 24,
-    bottom: 40,
+    bottom: 96, // moved up from 40 to avoid tab bar
     backgroundColor: '#e44332',
     width: 64,
     height: 64,

@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 import * as SQLite from 'expo-sqlite';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   ActionSheetIOS,
   Alert,
@@ -57,9 +58,12 @@ export default function Completed() {
     await loadTodos();
   };
 
-  useEffect(() => {
-    loadTodos();
-  }, [loadTodos]);
+  useFocusEffect(
+    React.useCallback(() => {
+      loadTodos();
+    }, [loadTodos])
+  );
+
 
   return (
     <View style={styles.container}>

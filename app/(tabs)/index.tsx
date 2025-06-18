@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
 import * as SQLite from 'expo-sqlite';
 import React, { useEffect, useState } from 'react';
@@ -101,11 +102,12 @@ export default function Tabs() {
     await loadTodos();
   };
 
-  // Reload todos on mount
-  useEffect(() => {
-    loadTodos();
-  }, [loadTodos]);
 
+  useFocusEffect(
+    React.useCallback(() => {
+      loadTodos();
+    }, [loadTodos])
+  );
 
 
   return (

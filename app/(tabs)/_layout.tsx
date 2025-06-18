@@ -33,6 +33,8 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="checklist" color={color} />,
         }}
       />
+      {/* NEW: Add the Search Tab in the middle */}
+
       <Tabs.Screen
         name="completed"
         options={{
@@ -40,6 +42,13 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="checkmark.seal.fill" color={color} />,
         }}
       />
+            <Tabs.Screen
+        name="search"
+        options={{
+          title: 'Search',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="magnifyingglass" color={color} />,
+        }}
+      /> 
     </Tabs>
   );
 }

@@ -1,7 +1,3 @@
-// constants/Colors.ts
-
-// --- BRAND & PRIORITY COLORS ---
-// These colors are consistent across both light and dark themes.
 const primary = '#e44332';
 const p1 = '#e44332';
 const p2 = '#ff9800';
@@ -12,8 +8,8 @@ export const Colors = {
     // General
     text: '#11181C',
     textSecondary: '#687076',
-    background: '#f2f2f7', // iOS default system background
-    card: '#ffffff',
+    background: '#ffffff', // UPDATED: Changed to pure white
+    card: '#f0f2f5',       // UPDATED: Changed to a light grey for search bars, modals, etc.
     cardSecondary: '#f9f9f9',
     border: '#dcdcdc',
     tint: primary,
@@ -26,7 +22,7 @@ export const Colors = {
     p1,
     p2,
     p3,
-    p4: '#8e8e93', // A slightly darker gray for light mode
+    p4: '#8e8e93',
     p1_bg: 'rgba(228, 67, 50, 0.1)',
     p2_bg: 'rgba(255, 152, 0, 0.1)',
     p3_bg: 'rgba(33, 150, 243, 0.1)',

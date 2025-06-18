@@ -2,17 +2,15 @@ import { useFocusEffect } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
 import React, { useCallback, useState } from 'react';
 import { Dimensions, StyleSheet, Text, View } from 'react-native';
-import { EditTodoModal } from '../../components/todos/EditTodoModal';
-import { TodoList } from '../../components/todos/TodoList';
 
 import { AddTodoButton } from '@/components/todos/AddTodoButton';
-import { Colors } from '../../constants/Colors'; // Import Colors for the type
+import { EditTodoModal } from '../../components/todos/EditTodoModal';
+import { TodoList } from '../../components/todos/TodoList';
+import { Colors } from '../../constants/Colors';
 import { Todo, useTodosContext } from '../../hooks/TodosContext';
 import { useTheme } from '../../hooks/useTheme';
 
 const { height } = Dimensions.get('window');
-
-// Define the type for our theme colors object
 type ThemeColors = typeof Colors.light;
 
 export default function Index() {
@@ -23,7 +21,8 @@ export default function Index() {
   
   const [modalVisible, setModalVisible] = useState(false);
   const [editingTodo, setEditingTodo] = useState<Todo | null>(null);
-
+  
+  // The search state and filtering logic have been removed.
   const activeTodos = todos.filter((t: Todo) => !t.completed);
 
   const handleSaveTodo = async (todoData: { text: string; description: string; priority: 'p1' | 'p2' | 'p3' | 'p4' }) => {
@@ -46,11 +45,7 @@ export default function Index() {
     setEditingTodo(null);
     setModalVisible(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-  };
-
-  const handleReorder = async (reorderedTodos: Todo[]) => {
-    await updateTodoOrder(reorderedTodos);
-  };
+  }
 
   useFocusEffect(
     useCallback(() => {
@@ -62,13 +57,16 @@ export default function Index() {
     <View style={styles.container}>
       <Text style={styles.today}>Tasks</Text>
       
+      {/* The Search Bar UI has been removed from here. */}
+
+      {/* The TodoList now receives the `activeTodos` directly. */}
       <TodoList
         todos={activeTodos}
         onToggleComplete={toggleTodoCompleted}
         onDelete={deleteTodo}
         onStartEdit={handleStartEdit}
         onReload={reload}
-        onReorder={handleReorder}
+        onReorder={updateTodoOrder}
         emptyMessage="No tasks yet. Add one!"
       />
       
@@ -84,18 +82,18 @@ export default function Index() {
   );
 }
 
-// Apply the explicit type to the 'colors' parameter here
 const getStyles = (colors: ThemeColors) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
     paddingTop: height * 0.12,
-    paddingHorizontal: 20,
+    paddingHorizontal: 20, // Padding is restored to the main container
   },
   today: {
     color: colors.text,
     fontSize: 36,
     fontWeight: 'bold',
-    marginBottom: 8,
+    marginBottom: 16, // Increased margin to give the list more space
   },
+  // The search-related styles have been removed.
 });

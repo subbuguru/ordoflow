@@ -1,8 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
-import * as SQLite from 'expo-sqlite';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   ActionSheetIOS,
   Alert,
@@ -15,61 +14,63 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
+import { Todo, useTodosContext } from '../../hooks/TodosContext';
 
-interface Todo {
-  id: string;
-  text: string;
-  completed: boolean;
-  date: string;
-  priority: 'p1' | 'p2' | 'p3' | 'p4';
-  description?: string;
-}
-
-const db = SQLite.openDatabaseSync('todoit.db');
 const { height } = Dimensions.get('window');
 
 export default function Completed() {
-  const [todos, setTodos] = useState<Todo[]>([]);
-  const [animValues, setAnimValues] = useState<{ [id: string]: Animated.Value }>({});
+  const { todos, toggleTodoCompleted, deleteTodo, deleteAllCompleted, reload } = useTodosContext();
+  const [rowAnimValues, setRowAnimValues] = useState<{ [id: string]: Animated.Value }>({});
+  const [completingId, setCompletingId] = useState<string | null>(null);
 
-  // Load only completed todos
-  const loadTodos = React.useCallback(() => {
-    db.withTransactionAsync(async () => {
-      const todosRaw = await db.getAllAsync<any>(`SELECT * FROM todos WHERE completed = 1 ORDER BY id DESC;`);
-      const todos: Todo[] = todosRaw.map((t: any) => ({
-        ...t,
-        id: String(t.id),
-        completed: !!t.completed,
-      }));
-      setTodos(todos);
-    });
-  }, []);
+  // Only show completed todos
+  const completedTodos = todos.filter((t: Todo) => t.completed);
 
-  // Toggle completion in SQLite
-  const toggleTodo = async (id: string, completed: boolean) => {
-    await db.withTransactionAsync(async () => {
-      await db.runAsync(`UPDATE todos SET completed = ? WHERE id = ?`, [completed ? 0 : 1, Number(id)]);
+  useEffect(() => {
+    const newAnimValues: { [id: string]: Animated.Value } = {};
+    completedTodos.forEach(todo => {
+      if (!rowAnimValues[todo.id]) {
+        newAnimValues[todo.id] = new Animated.Value(1);
+      }
     });
-    await loadTodos();
+    if (Object.keys(newAnimValues).length > 0) {
+      setRowAnimValues(prev => ({ ...prev, ...newAnimValues }));
+    }
+  }, [completedTodos, rowAnimValues]);
+
+  const handleUncomplete = (item: Todo) => {
+    if (completingId) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setCompletingId(item.id);
+    const animValue = rowAnimValues[item.id];
+    Animated.timing(animValue, {
+      toValue: 0,
+      duration: 350,
+      useNativeDriver: true,
+    }).start(async () => {
+      await toggleTodoCompleted(item.id, false);
+      setCompletingId(null);
+      reload();
+    });
   };
 
-  // Delete todo
-  const deleteTodo = async (id: string) => {
-    await db.withTransactionAsync(async () => {
-      await db.runAsync(`DELETE FROM todos WHERE id = ?`, [Number(id)]);
-    });
-    await loadTodos();
+  const deleteTodoHandler = async (id: string) => {
+    await deleteTodo(id);
+    reload();
   };
 
-  // Delete all completed todos
-  const deleteAllCompleted = async () => {
-    await db.withTransactionAsync(async () => {
-      await db.runAsync(`DELETE FROM todos WHERE completed = 1`);
-    });
-    await loadTodos();
+  const confirmDeleteAll = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    Alert.alert(
+      'Delete All Completed?',
+      'Are you sure you want to delete all completed tasks? This cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Delete All', style: 'destructive', onPress: async () => { await deleteAllCompleted(); reload(); } },
+      ]
+    );
   };
 
-  // Show 3-dots menu for header actions
   const showHeaderMenu = () => {
     if (Platform.OS === 'ios') {
       ActionSheetIOS.showActionSheetWithOptions(
@@ -94,43 +95,10 @@ export default function Completed() {
     }
   };
 
-  // Confirm before deleting all completed
-  const confirmDeleteAll = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    Alert.alert(
-      'Delete All Completed?',
-      'Are you sure you want to delete all completed tasks? This cannot be undone.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Delete All', style: 'destructive', onPress: deleteAllCompleted },
-      ]
-    );
-  };
-
-  // Animate completion toggle
-  const animateToggle = (id: string, completed: boolean, cb: () => void) => {
-    if (!animValues[id]) {
-      setAnimValues(v => ({ ...v, [id]: new Animated.Value(1) }));
-    }
-    const toValue = completed ? 0.7 : 1;
-    Animated.sequence([
-      Animated.timing(animValues[id] || new Animated.Value(1), {
-        toValue,
-        duration: 120,
-        useNativeDriver: true,
-      }),
-      Animated.timing(animValues[id] || new Animated.Value(1), {
-        toValue: 1,
-        duration: 120,
-        useNativeDriver: true,
-      })
-    ]).start(cb);
-  };
-
   useFocusEffect(
     React.useCallback(() => {
-      loadTodos();
-    }, [loadTodos])
+      reload();
+    }, [reload])
   );
 
 
@@ -138,14 +106,14 @@ export default function Completed() {
     <View style={styles.container}>
       <View style={styles.headerRow}>
         <Text style={styles.today}>Completed</Text>
-        {todos.length > 0 && (
+        {completedTodos.length > 0 && (
           <TouchableOpacity onPress={showHeaderMenu} style={styles.menuBtn}>
             <Ionicons name="ellipsis-horizontal-outline" size={26} color="#e44332" style={styles.menuIconOutline} />
           </TouchableOpacity>
         )}
       </View>
       <FlatList
-        data={todos}
+        data={completedTodos}
         keyExtractor={item => String(item.id)}
         renderItem={({ item }) => (
           <TouchableOpacity
@@ -160,7 +128,7 @@ export default function Completed() {
                     cancelButtonIndex: 0,
                   },
                   buttonIndex => {
-                    if (buttonIndex === 1) deleteTodo(item.id);
+                    if (buttonIndex === 1) deleteTodoHandler(item.id);
                   }
                 );
               } else {
@@ -169,7 +137,7 @@ export default function Completed() {
                   'Are you sure you want to delete this task?',
                   [
                     { text: 'Cancel', style: 'cancel' },
-                    { text: 'Delete', style: 'destructive', onPress: () => deleteTodo(item.id) },
+                    { text: 'Delete', style: 'destructive', onPress: () => deleteTodoHandler(item.id) },
                   ]
                 );
               }
@@ -190,10 +158,10 @@ export default function Completed() {
               ]}
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                animateToggle(item.id, item.completed, () => toggleTodo(item.id, item.completed));
+                handleUncomplete(item);
               }}
             >
-              <Animated.View style={{ transform: [{ scale: animValues[item.id] || 1 }] }}>
+              <Animated.View style={{ transform: [{ scale: rowAnimValues[item.id] || 1 }] }}>
                 {item.completed && (
                   <Ionicons
                     name="checkmark"

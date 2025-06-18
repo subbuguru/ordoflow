@@ -1,7 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
-import * as SQLite from 'expo-sqlite';
 import React, { useEffect, useState } from 'react';
 import {
   ActionSheetIOS,
@@ -19,116 +18,55 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
+import { Todo, useTodosContext } from '../../hooks/TodosContext';
 
-interface Todo {
-  id: string;
-  text: string;
-  completed: boolean;
-  date: string;
-  priority: 'p1' | 'p2' | 'p3' | 'p4';
-  description?: string;
-}
-
-const db = SQLite.openDatabaseSync('todoit.db');
 const { height } = Dimensions.get('window');
 
 export default function Tabs() {
-  const [todos, setTodos] = useState<Todo[]>([]);
+  const { todos, addTodo, updateTodo, toggleTodoCompleted, deleteTodo, reload } = useTodosContext();
   const [modalVisible, setModalVisible] = useState(false);
   const [input, setInput] = useState('');
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState<'p1' | 'p2' | 'p3' | 'p4'>('p4');
   const [showPrioritySelector, setShowPrioritySelector] = useState(false);
   const [editingTodo, setEditingTodo] = useState<Todo | null>(null);
-
-  // NEW: State to hold animation values for each row (opacity, scale)
   const [rowAnimValues, setRowAnimValues] = useState<{ [id: string]: Animated.Value }>({});
-  // NEW: State to track the ID of the item currently being animated for completion
   const [completingId, setCompletingId] = useState<string | null>(null);
 
+  // Only show active todos
+  const activeTodos = todos.filter((t: Todo) => !t.completed);
 
-  useEffect(() => {
-    db.withTransactionAsync(async () => {
-      await db.execAsync(
-        `CREATE TABLE IF NOT EXISTS todos (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          text TEXT,
-          description TEXT,
-          completed INTEGER,
-          date TEXT,
-          priority TEXT
-        );`
-      );
-    }).then(loadTodos);
-  }, []);
-
-  // UPDATED: When todos are loaded, initialize their animation values.
+  // Initialize animation values for each todo
   useEffect(() => {
     const newAnimValues: { [id: string]: Animated.Value } = {};
-    todos.forEach(todo => {
-      // If an animation value doesn't exist for a todo, create one.
+    activeTodos.forEach(todo => {
       if (!rowAnimValues[todo.id]) {
         newAnimValues[todo.id] = new Animated.Value(1);
       }
     });
-    // Combine new values with existing ones
     if (Object.keys(newAnimValues).length > 0) {
       setRowAnimValues(prev => ({ ...prev, ...newAnimValues }));
     }
-  }, [todos]);
+  }, [activeTodos, rowAnimValues]);
 
   const saveTodo = async () => {
     if (!input.trim()) return;
     if (editingTodo) {
-      await db.withTransactionAsync(async () => {
-        await db.runAsync(
-          `UPDATE todos SET text = ?, description = ?, priority = ? WHERE id = ?`,
-          [input, description, priority, Number(editingTodo.id)]
-        );
-      });
+      await updateTodo({ ...editingTodo, text: input, description, priority });
     } else {
-      await db.withTransactionAsync(async () => {
-        await db.runAsync(
-          `INSERT INTO todos (text, description, completed, date, priority) VALUES (?, ?, ?, ?, ?);`,
-          [input, description, 0, new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), priority]
-        );
-      });
+      await addTodo(input, description, priority);
     }
     setInput('');
     setDescription('');
     setPriority('p4');
     setEditingTodo(null);
     setModalVisible(false);
-    loadTodos();
+    reload();
   };
 
-  const loadTodos = React.useCallback(() => {
-    db.withTransactionAsync(async () => {
-      const todosRaw = await db.getAllAsync<any>(`SELECT * FROM todos WHERE completed = 0 ORDER BY id DESC;`);
-      const todos: Todo[] = todosRaw.map((t: any) => ({
-        ...t,
-        id: String(t.id),
-        completed: !!t.completed,
-      }));
-      setTodos(todos);
-    });
-  }, []);
-
-  const toggleTodo = async (id: string) => {
-    // We only toggle to 'completed' here, so we set it to 1.
-    await db.withTransactionAsync(async () => {
-      await db.runAsync(`UPDATE todos SET completed = 1 WHERE id = ?`, [Number(id)]);
-    });
-    // Reset completing ID and reload the list from the database
-    setCompletingId(null);
-    await loadTodos();
-  };
-
-  const deleteTodo = async (id: string) => {
-    await db.withTransactionAsync(async () => {
-      await db.runAsync(`DELETE FROM todos WHERE id = ?`, [Number(id)]);
-    });
-    await loadTodos();
+  const deleteTodoHandler = async (id: string) => {
+    await deleteTodo(id);
+    reload();
   };
 
   const startEditTodo = (todo: Todo) => {
@@ -138,40 +76,27 @@ export default function Tabs() {
     setPriority(todo.priority);
     setModalVisible(true);
   };
-  
-  // NEW: The main function to handle the completion animation and logic
+
   const handleComplete = (item: Todo) => {
-    // Don't allow another completion while one is in progress
     if (completingId) return;
-
-    // Trigger haptic feedback
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    
-    // Set the completing ID to immediately apply completed styles
     setCompletingId(item.id);
-
-    // Get the specific animation value for this row
     const animValue = rowAnimValues[item.id];
-
-    // Animate the row: fade out and shrink
     Animated.timing(animValue, {
       toValue: 0,
-      duration: 350, // A bit longer to appreciate the fade
-      useNativeDriver: true, // Use native driver for smoother animation
-    }).start(() => {
-      // After the animation is complete, update the database
-      toggleTodo(item.id);
-      // We don't need to reset the animValue to 1 here, because the item
-      // will be removed from the `todos` state entirely. If it's ever
-      // un-completed, it will be a new item in the list and get a new animValue.
+      duration: 350,
+      useNativeDriver: true,
+    }).start(async () => {
+      await toggleTodoCompleted(item.id, true);
+      setCompletingId(null);
+      reload();
     });
   };
 
-
   useFocusEffect(
     React.useCallback(() => {
-      loadTodos();
-    }, [loadTodos])
+      reload();
+    }, [reload])
   );
 
 
@@ -179,7 +104,7 @@ export default function Tabs() {
     <View style={styles.container}>
       <Text style={styles.today}>Tasks</Text>
       <FlatList
-        data={todos}
+        data={activeTodos}
         keyExtractor={item => String(item.id)}
         renderItem={({ item }) => {
           // UPDATED: Check if the current item is the one being completed

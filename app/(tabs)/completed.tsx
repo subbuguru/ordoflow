@@ -1,74 +1,34 @@
-// app/(tabs)/completed.tsx
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback } from 'react';
 import {
   ActionSheetIOS,
   Alert,
-  Animated,
   Dimensions,
-  FlatList,
   Platform,
   StyleSheet,
   Text,
   TouchableOpacity,
-  View
+  View,
 } from 'react-native';
-import { Colors } from '../../constants/Colors'; // Import for type definition
-import { Todo, useTodosContext } from '../../hooks/TodosContext';
-import { useTheme } from '../../hooks/useTheme'; // Import the theme hook
+import { TodoList } from '../../components/todos/TodoList';
+import { Colors } from '../../constants/Colors'; // <-- ADDED THIS IMPORT
+import { useTodosContext } from '../../hooks/TodosContext';
+import { useTheme } from '../../hooks/useTheme';
 
 const { height } = Dimensions.get('window');
 
-// Type for our color palette
-type ThemeColors = typeof Colors.light;
+// Define the type for our theme colors object
+type ThemeColors = typeof Colors.light; // <-- ADDED THIS TYPE DEFINITION
 
 export default function Completed() {
-  const colors = useTheme(); // Use the hook
-  const styles = getStyles(colors); // Generate styles with current theme colors
+  const colors = useTheme();
+  const styles = getStyles(colors);
 
   const { todos, toggleTodoCompleted, deleteTodo, deleteAllCompleted, reload } = useTodosContext();
-  const [rowAnimValues, setRowAnimValues] = useState<{ [id: string]: Animated.Value }>({});
-  const [completingId, setCompletingId] = useState<string | null>(null);
 
-  const completedTodos = todos.filter((t: Todo) => t.completed);
-
-  useEffect(() => {
-    const newAnimValues: { [id: string]: Animated.Value } = {};
-    completedTodos.forEach(todo => {
-      if (!rowAnimValues[todo.id]) {
-        newAnimValues[todo.id] = new Animated.Value(1);
-      }
-    });
-    if (Object.keys(newAnimValues).length > 0) {
-      setRowAnimValues(prev => ({ ...prev, ...newAnimValues }));
-    }
-  }, [completedTodos, rowAnimValues]);
-
-  const handleUncomplete = (item: Todo) => {
-    if (completingId) return;
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setCompletingId(item.id);
-    const animValue = rowAnimValues[item.id];
-    Animated.timing(animValue, {
-      toValue: 0,
-      duration: 350,
-      useNativeDriver: true,
-    }).start(async () => {
-      await toggleTodoCompleted(item.id, false);
-      setTimeout(() => {
-        setCompletingId(null);
-        reload();
-        if (animValue) animValue.setValue(1);
-      }, 50);
-    });
-  };
-
-  const deleteTodoHandler = async (id: string) => {
-    await deleteTodo(id);
-    reload();
-  };
+  const completedTodos = todos.filter((t) => t.completed);
 
   const confirmDeleteAll = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -107,11 +67,10 @@ export default function Completed() {
   };
 
   useFocusEffect(
-    React.useCallback(() => {
+    useCallback(() => {
       reload();
     }, [reload])
   );
-
 
   return (
     <View style={styles.container}>
@@ -123,95 +82,20 @@ export default function Completed() {
           </TouchableOpacity>
         )}
       </View>
-      <FlatList
-        data={completedTodos}
-        keyExtractor={item => String(item.id)}
-        renderItem={({ item }) => {
-          const animStyle = {
-            opacity: rowAnimValues[item.id],
-            transform: [
-              {
-                scale: rowAnimValues[item.id]
-                  ? rowAnimValues[item.id].interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [0.85, 1],
-                    })
-                  : 1,
-              },
-            ],
-          };
-          return (
-            <Animated.View style={animStyle}>
-              <TouchableOpacity
-                style={styles.todoRow}
-                onLongPress={() => {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                  if (Platform.OS === 'ios') {
-                    ActionSheetIOS.showActionSheetWithOptions(
-                      {
-                        options: ['Cancel', 'Delete Task'],
-                        destructiveButtonIndex: 1,
-                        cancelButtonIndex: 0,
-                      },
-                      buttonIndex => {
-                        if (buttonIndex === 1) deleteTodoHandler(item.id);
-                      }
-                    );
-                  } else {
-                    Alert.alert(
-                      'Delete Task',
-                      'Are you sure you want to delete this task?',
-                      [
-                        { text: 'Cancel', style: 'cancel' },
-                        { text: 'Delete', style: 'destructive', onPress: () => deleteTodoHandler(item.id) },
-                      ]
-                    );
-                  }
-                }}
-              >
-                <TouchableOpacity
-                  style={[styles.circle,
-                    item.priority === 'p1' && styles.circleP1,
-                    item.priority === 'p2' && styles.circleP2,
-                    item.priority === 'p3' && styles.circleP3,
-                    item.priority === 'p4' && styles.circleP4,
-                    item.completed && [
-                      styles.circleCompletedP1,
-                      styles.circleCompletedP2,
-                      styles.circleCompletedP3,
-                      styles.circleCompletedP4,
-                    ]
-                  ]}
-                  onPress={() => handleUncomplete(item)}
-                >
-                  <Animated.View style={{ transform: [{ scale: rowAnimValues[item.id] || 1 }] }}>
-                    {item.completed && (
-                      <Ionicons
-                        name="checkmark"
-                        size={16}
-                        color="#fff"
-                        style={{ backgroundColor: 'transparent' }}
-                      />
-                    )}
-                  </Animated.View>
-                </TouchableOpacity>
-                <View style={styles.todoTextContainer}>
-                  <Text style={[styles.todoText, styles.todoTextCompleted]}>{item.text}</Text>
-                  {!!item.description && (
-                    <Text style={styles.todoDescription}>{item.description}</Text>
-                  )}
-                </View>
-              </TouchableOpacity>
-            </Animated.View>
-          );
-        }}
-        ListEmptyComponent={<Text style={styles.empty}>No completed tasks yet</Text>}
-        contentContainerStyle={{ flexGrow: 1 }}
+
+      <TodoList
+        todos={completedTodos}
+        onToggleComplete={toggleTodoCompleted}
+        onDelete={deleteTodo}
+        onStartEdit={() => {}}
+        onReload={reload}
+        emptyMessage="No completed tasks yet."
       />
     </View>
   );
 }
 
+// Corrected the function signature here to include the explicit type
 const getStyles = (colors: ThemeColors) => StyleSheet.create({
   container: {
     flex: 1,
@@ -233,51 +117,5 @@ const getStyles = (colors: ThemeColors) => StyleSheet.create({
   },
   menuBtn: {
     padding: 8,
-  },
-  todoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  circle: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-    borderWidth: 2,
-    marginRight: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'transparent',
-  },
-  circleP1: { borderColor: colors.p1, backgroundColor: colors.p1_bg },
-  circleP2: { borderColor: colors.p2, backgroundColor: colors.p2_bg },
-  circleP3: { borderColor: colors.p3, backgroundColor: colors.p3_bg },
-  circleP4: { borderColor: colors.p4, backgroundColor: colors.p4_bg },
-  circleCompletedP1: { backgroundColor: colors.p1, borderColor: colors.p1 },
-  circleCompletedP2: { backgroundColor: colors.p2, borderColor: colors.p2 },
-  circleCompletedP3: { backgroundColor: colors.p3, borderColor: colors.p3 },
-  circleCompletedP4: { backgroundColor: colors.p4, borderColor: colors.p4 },
-  todoTextContainer: {
-    flex: 1,
-  },
-  todoText: {
-    color: colors.text,
-    fontSize: 16,
-  },
-  todoTextCompleted: {
-    textDecorationLine: 'line-through',
-    color: colors.textSecondary,
-  },
-  todoDescription: {
-    color: colors.textSecondary,
-    fontSize: 13,
-    marginTop: 2,
-  },
-  empty: {
-    color: colors.textSecondary,
-    textAlign: 'center',
-    marginTop: 40,
   },
 });

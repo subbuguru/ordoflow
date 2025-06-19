@@ -1,4 +1,3 @@
-// No changes to imports or the component body, only getStyles
 import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
 import {
@@ -13,34 +12,57 @@ import {
   View,
 } from "react-native";
 import { Colors } from "../../constants/Colors";
+import { Todo } from "../../hooks/TodosContext";
 import { useTheme } from "../../hooks/useTheme";
 
 type ThemeColors = typeof Colors.light;
 
-// ... (The EditTodoModal component code is unchanged) ...
-export function EditTodoModal({ visible, onClose, onSave, todoToEdit }: any) {
+// 1. ADDED: The specific interface for this component's props.
+interface EditTodoModalProps {
+  visible: boolean;
+  onClose: () => void;
+  onSave: (todoData: {
+    text: string;
+    description: string;
+    priority: "p1" | "p2" | "p3" | "p4";
+  }) => void;
+  todoToEdit: Todo | null;
+}
+
+// 2. A type-safe array for our priority options.
+const priorities: ["p1" | "p2" | "p3" | "p4", string][] = [
+  ["p1", "Priority 1"],
+  ["p2", "Priority 2"],
+  ["p3", "Priority 3"],
+  ["p4", "No Priority"],
+];
+
+// 3. CORRECTED: The component now correctly uses the props interface.
+export function EditTodoModal({
+  visible,
+  onClose,
+  onSave,
+  todoToEdit,
+}: EditTodoModalProps) {
   const colors = useTheme();
   const styles = getStyles(colors);
 
-  // The modal now manages its own internal form state.
   const [input, setInput] = useState("");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState<"p1" | "p2" | "p3" | "p4">("p4");
   const [showPrioritySelector, setShowPrioritySelector] = useState(false);
 
-  // When the modal is opened, populate the state from the `todoToEdit` prop.
   useEffect(() => {
     if (todoToEdit) {
       setInput(todoToEdit.text);
       setDescription(todoToEdit.description || "");
       setPriority(todoToEdit.priority);
     } else {
-      // If adding a new task, reset to default state
       setInput("");
       setDescription("");
       setPriority("p4");
     }
-  }, [todoToEdit, visible]); // Rerun effect when visibility or the todo item changes
+  }, [todoToEdit, visible]);
 
   const handleSave = () => {
     if (!input.trim()) return;
@@ -48,7 +70,7 @@ export function EditTodoModal({ visible, onClose, onSave, todoToEdit }: any) {
   };
 
   const handleClose = () => {
-    setShowPrioritySelector(false); // ensure sub-modal closes
+    setShowPrioritySelector(false);
     onClose();
   };
 
@@ -92,6 +114,7 @@ export function EditTodoModal({ visible, onClose, onSave, todoToEdit }: any) {
                     styles[`priorityButton_${priority}`],
                   ]}
                   onPress={() => setShowPrioritySelector(true)}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                 >
                   <Ionicons
                     name="flag"
@@ -100,17 +123,15 @@ export function EditTodoModal({ visible, onClose, onSave, todoToEdit }: any) {
                     style={{ marginRight: 6 }}
                   />
                   <Text style={{ color: colors.text, fontSize: 13 }}>
-                    {priority === "p1"
-                      ? "Priority 1"
-                      : priority === "p2"
-                      ? "Priority 2"
-                      : priority === "p3"
-                      ? "Priority 3"
-                      : "No Priority"}
+                    {priorities.find((p) => p[0] === priority)?.[1]}
                   </Text>
                 </TouchableOpacity>
               </View>
-              <TouchableOpacity onPress={handleSave} style={styles.modalAddBtn}>
+              <TouchableOpacity
+                onPress={handleSave}
+                style={styles.modalAddBtn}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
                 <Ionicons
                   name={todoToEdit ? "checkmark" : "arrow-up"}
                   size={16}
@@ -132,14 +153,7 @@ export function EditTodoModal({ visible, onClose, onSave, todoToEdit }: any) {
           />
           <View style={styles.bottomSheet}>
             <View style={styles.bottomSheetList}>
-              {(
-                [
-                  ["p1", "Priority 1"],
-                  ["p2", "Priority 2"],
-                  ["p3", "Priority 3"],
-                  ["p4", "No Priority"],
-                ] as const
-              ).map(([val, label], idx, arr) => (
+              {priorities.map(([val, label], idx, arr) => (
                 <React.Fragment key={val}>
                   <TouchableOpacity
                     style={styles.bottomSheetOption}
@@ -151,7 +165,7 @@ export function EditTodoModal({ visible, onClose, onSave, todoToEdit }: any) {
                     <Ionicons
                       name="flag"
                       size={20}
-                      color={colors[val as keyof ThemeColors]}
+                      color={colors[val]}
                       style={{ marginRight: 12 }}
                     />
                     <Text style={{ color: colors.text, fontSize: 18 }}>
@@ -177,10 +191,8 @@ export function EditTodoModal({ visible, onClose, onSave, todoToEdit }: any) {
   );
 }
 
-// Apply the explicit type to the 'colors' parameter here
 const getStyles = (colors: ThemeColors) =>
   StyleSheet.create({
-    // ... (All the styles from before are unchanged) ...
     modalContainer: {
       flex: 1,
       justifyContent: "flex-end",

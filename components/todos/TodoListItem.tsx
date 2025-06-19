@@ -57,7 +57,7 @@ export function TodoListItem({
     itemScale.value = withTiming(1);
     translateX.value = withTiming(0);
     setIsVisuallyCompleting(false);
-  }, [item]);
+  }, [item, itemOpacity, itemScale, translateX]);
 
   const panGesture = Gesture.Pan()
     .onUpdate((event) => {
@@ -89,19 +89,13 @@ export function TodoListItem({
     transform: [{ scale: itemScale.value }],
   }));
 
-  // UPDATED: This function is now smarter
   const handleToggleComplete = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
     if (item.completed) {
-      // --- UN-COMPLETING A TASK ---
-      // If the task is already complete, we just update the data instantly.
-      // No animations are needed because the item should stay on the screen.
       await onToggleComplete(item.id, false);
       onReload();
     } else {
-      // --- COMPLETING A TASK ---
-      // Use the existing animation flow for completing a new task.
       setIsVisuallyCompleting(true);
       setTimeout(() => {
         itemOpacity.value = withTiming(0);
@@ -116,6 +110,12 @@ export function TodoListItem({
 
   const isComplete = item.completed || isVisuallyCompleting;
 
+  // Create a new handler that combines haptics with the drag action
+  const handleDragPress = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    onDrag?.();
+  };
+
   return (
     <Animated.View style={rCompleteStyle}>
       <View style={styles.swipeContainer}>
@@ -126,7 +126,10 @@ export function TodoListItem({
         <GestureDetector gesture={panGesture}>
           <Animated.View style={rSwipeStyle}>
             <Pressable style={styles.todoRow} onPress={() => onStartEdit(item)}>
-              <TouchableOpacity onPress={handleToggleComplete}>
+              <TouchableOpacity
+                onPress={handleToggleComplete}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
                 <View
                   style={[
                     styles.circle,
@@ -168,16 +171,17 @@ export function TodoListItem({
               </View>
               {onDrag && (
                 <TouchableOpacity
-                  onLongPress={onDrag}
+                  // UPDATED: Changed from onLongPress to onPressIn for instant dragging
+                  onPressIn={handleDragPress}
                   style={[
                     styles.dragHandle,
                     isActive && styles.dragHandleActive,
                   ]}
-                  hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
+                  hitSlop={{ top: 20, bottom: 20, left: 30, right: 30 }}
                 >
                   <Ionicons
                     name="reorder-three-outline"
-                    size={24}
+                    size={28}
                     color={colors.textSecondary}
                   />
                 </TouchableOpacity>

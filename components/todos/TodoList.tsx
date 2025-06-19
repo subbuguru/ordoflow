@@ -59,6 +59,7 @@ export function TodoList({
           onReorder(data);
         }
       }}
+      activationDistance={0}
       ListEmptyComponent={<Text style={styles.empty}>{emptyMessage}</Text>}
       contentContainerStyle={
         todos.length === 0 ? styles.emptyContainer : undefined

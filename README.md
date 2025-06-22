@@ -41,7 +41,7 @@ Start the Expo development server:
 npx expo start
 ```
 
-## 📄 License
+## License
 
 This project is open source and available under the [MIT License](LICENSE).
 

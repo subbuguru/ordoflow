@@ -1,5 +1,3 @@
-
-
 # Ordoflow
 
 <p align="center">
@@ -12,21 +10,20 @@
 
 
 
-Ordoflow is a todo list application built with Expo and React-Native. I built it (with the assistance of GenAI) as I wanted a simple one-list task manager for myself to avoid context switching. 
+Ordoflow is a beautifully simple task management application built with Expo and React-Native. Being a simple app, it uses expo-sqlite and React Context for storage and state management respectively.
 
-## ✨ Features
+## Why I Built This
 
-* **Full Task Management:** Add, edit, complete, and delete tasks with titles, descriptions, and priorities.
-* **Task Priorities:** Assign one of four priority levels (P1-P4) to each task, visualized with distinct colors.
-* **Persistent Storage:** Your tasks are saved locally on your device using a built-in SQLite database.
-* **Dynamic Theming:** Automatically adapts to your device's system-wide Light and Dark modes for a native feel.
-* **Manual Reordering:** Long-press and drag active tasks to arrange them in any order you prefer.
-* **Modern Gestures:** Swipe any task to the left to quickly delete it.
-* **Dedicated Search:** A separate tab allows you to instantly search the title and description of all your tasks, both active and completed.
+I developed Ordoflow as a simple one-list task manager for myself to avoid context switching. I also wanted to get my dad to start managing his tasks digitally and I figured making an app myself was the best way to inspire him!
 
-## 🚀 Getting Started
+## Features
 
-Follow these instructions to get the project running on your local machine for development and testing.
+- Task Priorities
+- Manual Reordering of tasks
+- Search Tab
+- Swipe to delete tasks
+ 
+## Installation
 
 ### 1. Install Dependencies
 
@@ -44,81 +41,8 @@ Start the Expo development server:
 npx expo start
 ```
 
-
-## 📁 Project Structure
-
-```
-app/
-├── (tabs)/              # Tab-based navigation
-│   ├── index.tsx        # Main todo list
-│   ├── completed.tsx    # Completed tasks
-│   └── search.tsx       # Search functionality
-└── _layout.tsx          # Root layout
-
-components/
-├── todos/               # Todo-related components
-│   ├── AddTodoButton.tsx
-│   ├── EditTodoModal.tsx
-│   ├── TodoList.tsx
-│   └── TodoListItem.tsx
-└── ui/                  # Reusable UI components
-
-hooks/
-├── TodosContext.tsx     # Global state management
-├── useColorScheme.ts    # Theme detection
-└── useTheme.ts          # Theme utilities
-
-constants/
-└── Colors.ts            # Color definitions
-```
-
-## 🎯 Usage
-
-### Adding Tasks
-1. Tap the "+" button to create a new task
-2. Enter a title (required) and optional description
-3. Select a priority level (P1-P4)
-4. Tap "Add Task" to save
-
-### Managing Tasks
-- **Complete**: Tap the checkbox to mark as complete
-- **Edit**: Tap on a task to edit its details
-- **Reorder**: Long-press and drag tasks to rearrange
-- **Delete**: Swipe left on any task to delete
-
-### Search
-- Use the Search tab to find tasks by title or description
-- Search works across both active and completed tasks
-
-## 🎨 Priority System
-
-Tasks can be assigned one of four priority levels:
-
-- **P1** (Highest): Red indicator
-- **P2** (High): Orange indicator  
-- **P3** (Medium): Yellow indicator
-- **P4** (Low): Blue indicator
-
-## 💾 Data Storage
-
-Ordoflow uses Expo SQLite for local data persistence. Your tasks are stored directly on your device and don't require an internet connection.
-
-## 🌙 Theming
-
-The app automatically adapts to your device's system theme:
-- **Light Mode**: Clean, bright interface
-- **Dark Mode**: Comfortable dark interface
-
-## 🤝 Contributing
-
-This project was built as an experimental "vibe-coding" session with AI assistance. Feel free to fork and modify for your own use!
-
 ## 📄 License
 
 This project is open source and available under the [MIT License](LICENSE).
 
-## 🙏 Acknowledgments
 
-- Built with [Expo](https://expo.dev/) and React Native
-- Created through AI-assisted development with Google Gemini 2.5 Pro
-- Icons provided by [Expo Vector Icons](https://icons.expo.fyi/)

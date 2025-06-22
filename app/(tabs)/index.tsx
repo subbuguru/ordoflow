@@ -8,9 +8,7 @@ import { TodoList } from "../../components/todos/TodoList";
 import { Colors } from "../../constants/Colors";
 import { Todo, useTodosContext } from "../../hooks/TodosContext";
 import { useTheme } from "../../hooks/useTheme";
-const {
-  height
-} = Dimensions.get("window");
+const { height } = Dimensions.get("window");
 type ThemeColors = typeof Colors.light;
 export default function Index() {
   const colors = useTheme();
@@ -22,7 +20,7 @@ export default function Index() {
     updateTodoOrder,
     toggleTodoCompleted,
     deleteTodo,
-    reload
+    reload,
   } = useTodosContext();
   const [modalVisible, setModalVisible] = useState(false);
   const [editingTodo, setEditingTodo] = useState<Todo | null>(null);
@@ -35,7 +33,7 @@ export default function Index() {
     if (editingTodo) {
       await updateTodo({
         ...editingTodo,
-        ...todoData
+        ...todoData,
       });
     } else {
       await addTodo(todoData.text, todoData.description, todoData.priority);
@@ -53,33 +51,51 @@ export default function Index() {
     setModalVisible(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
   };
-  useFocusEffect(useCallback(() => {
-    reload();
-  }, [reload]));
-  return <View style={styles.container}>
+  useFocusEffect(
+    useCallback(() => {
+      reload();
+    }, [reload]),
+  );
+  return (
+    <View style={styles.container}>
       <Text style={styles.today}>Tasks</Text>
 
       {}
 
       {}
-      <TodoList todos={activeTodos} onToggleComplete={toggleTodoCompleted} onDelete={deleteTodo} onStartEdit={handleStartEdit} onReload={reload} onReorder={updateTodoOrder} emptyMessage="No tasks yet. Add one!" />
+      <TodoList
+        todos={activeTodos}
+        onToggleComplete={toggleTodoCompleted}
+        onDelete={deleteTodo}
+        onStartEdit={handleStartEdit}
+        onReload={reload}
+        onReorder={updateTodoOrder}
+        emptyMessage="No tasks yet. Add one!"
+      />
 
       <AddTodoButton onPress={handleOpenAddModal} />
 
-      <EditTodoModal visible={modalVisible} onClose={() => setModalVisible(false)} onSave={handleSaveTodo} todoToEdit={editingTodo} />
-    </View>;
+      <EditTodoModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        onSave={handleSaveTodo}
+        todoToEdit={editingTodo}
+      />
+    </View>
+  );
 }
-const getStyles = (colors: ThemeColors) => StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-    paddingTop: height * 0.12,
-    paddingHorizontal: 20
-  },
-  today: {
-    color: colors.text,
-    fontSize: 36,
-    fontWeight: "bold",
-    marginBottom: 16
-  }
-});
+const getStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+      paddingTop: height * 0.12,
+      paddingHorizontal: 20,
+    },
+    today: {
+      color: colors.text,
+      fontSize: 36,
+      fontWeight: "bold",
+      marginBottom: 16,
+    },
+  });

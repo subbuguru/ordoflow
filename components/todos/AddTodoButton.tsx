@@ -5,15 +5,21 @@ import { useTheme } from "../../hooks/useTheme";
 interface AddTodoButtonProps {
   onPress: () => void;
 }
-export function AddTodoButton({
-  onPress
-}: AddTodoButtonProps) {
+export function AddTodoButton({ onPress }: AddTodoButtonProps) {
   const colors = useTheme();
-  return <TouchableOpacity style={[styles.button, {
-    backgroundColor: colors.tint
-  }]} onPress={onPress}>
+  return (
+    <TouchableOpacity
+      style={[
+        styles.button,
+        {
+          backgroundColor: colors.tint,
+        },
+      ]}
+      onPress={onPress}
+    >
       <Ionicons name="add" size={36} color="#fff" />
-    </TouchableOpacity>;
+    </TouchableOpacity>
+  );
 }
 const styles = StyleSheet.create({
   button: {
@@ -29,9 +35,9 @@ const styles = StyleSheet.create({
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
-      height: 2
+      height: 2,
     },
     shadowOpacity: 0.2,
-    shadowRadius: 4
-  }
+    shadowRadius: 4,
+  },
 });

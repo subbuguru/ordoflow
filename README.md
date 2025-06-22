@@ -12,9 +12,20 @@
 
 Ordoflow is a beautifully simple task management application built with Expo and React-Native. Being a simple app, it uses expo-sqlite and React Context for storage and state management respectively.
 
+[View Ordoflow on the App Store](https://apps.apple.com/us/app/ordoflow/id6747456117)
+
+
 ## Why I Built This
 
 I developed Ordoflow as a simple one-list task manager for myself to avoid context switching. I also wanted to get my dad to start managing his tasks digitally and I figured making an app myself was the best way to inspire him!
+
+
+## Tech Stack
+
+- React Native
+- Expo
+- React Context
+- expo-sqlite
 
 ## Features
 

@@ -12,7 +12,7 @@
 
 
 
-Ordoflow is a todo list application built with Expo and React-Native. It was built as an experiment "vibe-coding" with Google Gemini 2.5 Pro. This means all the code was produced by an AI Large Language Model. Use at your own risk. Even this readme.md is AI generated...
+Ordoflow is a todo list application built with Expo and React-Native. I built it (with the assistance of GenAI) as I wanted a simple one-list task manager for myself to avoid context switching. 
 
 ## ✨ Features
 

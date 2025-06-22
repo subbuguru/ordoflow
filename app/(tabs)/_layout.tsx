@@ -1,10 +1,10 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
-import { Platform } from 'react-native';
 import { HapticTab } from '@/components/ui/HapticTab';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import TabBarBackground from '@/components/ui/TabBarBackground';
 import { useTheme } from '@/hooks/useTheme';
+import { Tabs } from 'expo-router';
+import React from 'react';
+import { Platform } from 'react-native';
 
 export default function TabLayout() {
   const colors = useTheme();
@@ -45,6 +45,7 @@ export default function TabLayout() {
           ),
         }}
       />
+
       <Tabs.Screen
         name="search"
         options={{

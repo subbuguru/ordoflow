@@ -18,6 +18,7 @@ import Animated, {
 import { Colors } from '../../constants/Colors';
 import { Todo } from '../../hooks/TodosContext';
 import { useTheme } from '../../hooks/useTheme';
+
 type ThemeColors = typeof Colors.light;
 interface TodoListItemProps {
   item: Todo;
@@ -29,6 +30,7 @@ interface TodoListItemProps {
   isActive?: boolean;
 }
 const SWIPE_THRESHOLD = -100;
+
 export function TodoListItem({
   item,
   onToggleComplete,
@@ -44,6 +46,7 @@ export function TodoListItem({
   const translateX = useSharedValue(0);
   const itemOpacity = useSharedValue(1);
   const itemScale = useSharedValue(1);
+
   React.useEffect(() => {
     itemOpacity.value = withTiming(1);
     itemScale.value = withTiming(1);
@@ -86,8 +89,10 @@ export function TodoListItem({
       },
     ],
   }));
+
   const handleToggleComplete = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
     if (item.completed) {
       await onToggleComplete(item.id, false);
       onReload();
@@ -103,11 +108,14 @@ export function TodoListItem({
       }, 350);
     }
   };
+
   const isComplete = item.completed || isVisuallyCompleting;
+
   const handleDragPress = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     onDrag?.();
   };
+
   return (
     <Animated.View style={rCompleteStyle}>
       <View style={styles.swipeContainer}>
@@ -194,6 +202,7 @@ export function TodoListItem({
     </Animated.View>
   );
 }
+
 const getStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     swipeContainer: {

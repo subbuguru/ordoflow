@@ -8,8 +8,11 @@ import { TodoList } from '../../components/todos/TodoList';
 import { Colors } from '../../constants/Colors';
 import { Todo, useTodosContext } from '../../hooks/TodosContext';
 import { useTheme } from '../../hooks/useTheme';
+
 const { height } = Dimensions.get('window');
+
 type ThemeColors = typeof Colors.light;
+
 export default function Index() {
   const colors = useTheme();
   const styles = getStyles(colors);
@@ -25,6 +28,7 @@ export default function Index() {
   const [modalVisible, setModalVisible] = useState(false);
   const [editingTodo, setEditingTodo] = useState<Todo | null>(null);
   const activeTodos = todos.filter((t: Todo) => !t.completed);
+
   const handleSaveTodo = async (todoData: {
     text: string;
     description: string;
@@ -38,24 +42,29 @@ export default function Index() {
     } else {
       await addTodo(todoData.text, todoData.description, todoData.priority);
     }
+
     setModalVisible(false);
     setEditingTodo(null);
     reload();
   };
+
   const handleStartEdit = (todo: Todo) => {
     setEditingTodo(todo);
     setModalVisible(true);
   };
+
   const handleOpenAddModal = () => {
     setEditingTodo(null);
     setModalVisible(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
   };
+
   useFocusEffect(
     useCallback(() => {
       reload();
     }, [reload]),
   );
+
   return (
     <View style={styles.container}>
       <Text style={styles.today}>Tasks</Text>
@@ -81,6 +90,7 @@ export default function Index() {
     </View>
   );
 }
+
 const getStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     container: {

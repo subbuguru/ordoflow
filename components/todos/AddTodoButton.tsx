@@ -2,11 +2,14 @@ import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, TouchableOpacity } from 'react-native';
 import { useTheme } from '../../hooks/useTheme';
+
 interface AddTodoButtonProps {
   onPress: () => void;
 }
+
 export function AddTodoButton({ onPress }: AddTodoButtonProps) {
   const colors = useTheme();
+
   return (
     <TouchableOpacity
       style={[
@@ -21,6 +24,7 @@ export function AddTodoButton({ onPress }: AddTodoButtonProps) {
     </TouchableOpacity>
   );
 }
+
 const styles = StyleSheet.create({
   button: {
     position: 'absolute',

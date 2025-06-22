@@ -15,7 +15,9 @@ import { TodoList } from '../../components/todos/TodoList';
 import { Colors } from '../../constants/Colors';
 import { Todo, useTodosContext } from '../../hooks/TodosContext';
 import { useTheme } from '../../hooks/useTheme';
+
 const { height } = Dimensions.get('window');
+
 type ThemeColors = typeof Colors.light;
 
 export default function SearchScreen() {
@@ -29,11 +31,14 @@ export default function SearchScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const filteredTodos = todos.filter(todo => {
     if (!searchQuery) return false;
+
     const query = searchQuery.toLowerCase();
     const text = todo.text.toLowerCase();
     const description = todo.description?.toLowerCase() || '';
+
     return text.includes(query) || description.includes(query);
   });
+
   const handleSaveTodo = async (todoData: {
     text: string;
     description: string;
@@ -45,19 +50,23 @@ export default function SearchScreen() {
         ...todoData,
       });
     }
+
     setModalVisible(false);
     setEditingTodo(null);
     reload();
   };
+
   const handleStartEdit = (todo: Todo) => {
     setEditingTodo(todo);
     setModalVisible(true);
   };
+
   useFocusEffect(
     useCallback(() => {
       reload();
     }, [reload]),
   );
+
   return (
     <Pressable style={styles.container} onPress={Keyboard.dismiss}>
       <Text style={styles.today}>Search</Text>
@@ -102,6 +111,7 @@ export default function SearchScreen() {
     </Pressable>
   );
 }
+
 const getStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     container: {

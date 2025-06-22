@@ -8,6 +8,7 @@ import { Colors } from '../../constants/Colors';
 import { Todo } from '../../hooks/TodosContext';
 import { useTheme } from '../../hooks/useTheme';
 import { TodoListItem } from './TodoListItem';
+
 type ThemeColors = typeof Colors.light;
 interface TodoListProps {
   todos: Todo[];
@@ -18,6 +19,7 @@ interface TodoListProps {
   onReorder?: (reorderedTodos: Todo[]) => Promise<void>;
   emptyMessage: string;
 }
+
 export function TodoList({
   todos,
   onToggleComplete,
@@ -40,6 +42,7 @@ export function TodoList({
       isActive={isActive}
     />
   );
+
   return (
     <DraggableFlatList
       data={todos}
@@ -61,6 +64,7 @@ export function TodoList({
     />
   );
 }
+
 const getStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     emptyContainer: {

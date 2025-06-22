@@ -14,6 +14,7 @@ import {
 import { Colors } from '../../constants/Colors';
 import { Todo } from '../../hooks/TodosContext';
 import { useTheme } from '../../hooks/useTheme';
+
 type ThemeColors = typeof Colors.light;
 interface EditTodoModalProps {
   visible: boolean;
@@ -31,6 +32,7 @@ const priorities: ['p1' | 'p2' | 'p3' | 'p4', string][] = [
   ['p3', 'Priority 3'],
   ['p4', 'No Priority'],
 ];
+
 export function EditTodoModal({
   visible,
   onClose,
@@ -43,6 +45,7 @@ export function EditTodoModal({
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState<'p1' | 'p2' | 'p3' | 'p4'>('p4');
   const [showPrioritySelector, setShowPrioritySelector] = useState(false);
+
   useEffect(() => {
     if (todoToEdit) {
       setInput(todoToEdit.text);
@@ -54,18 +57,22 @@ export function EditTodoModal({
       setPriority('p4');
     }
   }, [todoToEdit, visible]);
+
   const handleSave = () => {
     if (!input.trim()) return;
+
     onSave({
       text: input,
       description,
       priority,
     });
   };
+
   const handleClose = () => {
     setShowPrioritySelector(false);
     onClose();
   };
+
   return (
     <Modal
       visible={visible}
@@ -213,6 +220,7 @@ export function EditTodoModal({
     </Modal>
   );
 }
+
 const getStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     modalContainer: {

@@ -16,14 +16,18 @@ import { TodoList } from '../../components/todos/TodoList';
 import { Colors } from '../../constants/Colors';
 import { useTodosContext } from '../../hooks/TodosContext';
 import { useTheme } from '../../hooks/useTheme';
+
 const { height } = Dimensions.get('window');
+
 type ThemeColors = typeof Colors.light;
+
 export default function Completed() {
   const colors = useTheme();
   const styles = getStyles(colors);
   const { todos, toggleTodoCompleted, deleteTodo, deleteAllCompleted, reload } =
     useTodosContext();
   const completedTodos = todos.filter(t => t.completed);
+
   const confirmDeleteAll = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     Alert.alert(
@@ -45,6 +49,7 @@ export default function Completed() {
       ],
     );
   };
+
   const showHeaderMenu = () => {
     if (Platform.OS === 'ios') {
       ActionSheetIOS.showActionSheetWithOptions(
@@ -71,11 +76,13 @@ export default function Completed() {
       ]);
     }
   };
+
   useFocusEffect(
     useCallback(() => {
       reload();
     }, [reload]),
   );
+
   return (
     <View style={styles.container}>
       <View style={styles.headerRow}>
@@ -102,6 +109,7 @@ export default function Completed() {
     </View>
   );
 }
+
 const getStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     container: {

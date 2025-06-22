@@ -1,6 +1,6 @@
-import { Ionicons } from "@expo/vector-icons";
-import { useFocusEffect } from "@react-navigation/native";
-import React, { useCallback, useState } from "react";
+import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
+import React, { useCallback, useState } from 'react';
 import {
   Dimensions,
   Keyboard,
@@ -9,33 +9,35 @@ import {
   Text,
   TextInput,
   View,
-} from "react-native";
-import { EditTodoModal } from "../../components/todos/EditTodoModal";
-import { TodoList } from "../../components/todos/TodoList";
-import { Colors } from "../../constants/Colors";
-import { Todo, useTodosContext } from "../../hooks/TodosContext";
-import { useTheme } from "../../hooks/useTheme";
-const { height } = Dimensions.get("window");
+} from 'react-native';
+import { EditTodoModal } from '../../components/todos/EditTodoModal';
+import { TodoList } from '../../components/todos/TodoList';
+import { Colors } from '../../constants/Colors';
+import { Todo, useTodosContext } from '../../hooks/TodosContext';
+import { useTheme } from '../../hooks/useTheme';
+const { height } = Dimensions.get('window');
 type ThemeColors = typeof Colors.light;
+
 export default function SearchScreen() {
   const colors = useTheme();
   const styles = getStyles(colors);
   const { todos, updateTodo, toggleTodoCompleted, deleteTodo, reload } =
     useTodosContext();
+
   const [modalVisible, setModalVisible] = useState(false);
   const [editingTodo, setEditingTodo] = useState<Todo | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
-  const filteredTodos = todos.filter((todo) => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const filteredTodos = todos.filter(todo => {
     if (!searchQuery) return false;
     const query = searchQuery.toLowerCase();
     const text = todo.text.toLowerCase();
-    const description = todo.description?.toLowerCase() || "";
+    const description = todo.description?.toLowerCase() || '';
     return text.includes(query) || description.includes(query);
   });
   const handleSaveTodo = async (todoData: {
     text: string;
     description: string;
-    priority: "p1" | "p2" | "p3" | "p4";
+    priority: 'p1' | 'p2' | 'p3' | 'p4';
   }) => {
     if (editingTodo) {
       await updateTodo({
@@ -85,8 +87,8 @@ export default function SearchScreen() {
           onReload={reload}
           emptyMessage={
             searchQuery
-              ? "No tasks match your search."
-              : "Type above to begin searching."
+              ? 'No tasks match your search.'
+              : 'Type above to begin searching.'
           }
         />
       </View>
@@ -110,13 +112,13 @@ const getStyles = (colors: ThemeColors) =>
     today: {
       color: colors.text,
       fontSize: 36,
-      fontWeight: "bold",
+      fontWeight: 'bold',
       marginBottom: 8,
       paddingHorizontal: 20,
     },
     searchContainer: {
-      flexDirection: "row",
-      alignItems: "center",
+      flexDirection: 'row',
+      alignItems: 'center',
       backgroundColor: colors.card,
       borderRadius: 12,
       marginBottom: 16,

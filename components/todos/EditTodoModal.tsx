@@ -1,5 +1,5 @@
-import { Ionicons } from "@expo/vector-icons";
-import React, { useEffect, useState } from "react";
+import { Ionicons } from '@expo/vector-icons';
+import React, { useEffect, useState } from 'react';
 import {
   KeyboardAvoidingView,
   Modal,
@@ -10,10 +10,10 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-} from "react-native";
-import { Colors } from "../../constants/Colors";
-import { Todo } from "../../hooks/TodosContext";
-import { useTheme } from "../../hooks/useTheme";
+} from 'react-native';
+import { Colors } from '../../constants/Colors';
+import { Todo } from '../../hooks/TodosContext';
+import { useTheme } from '../../hooks/useTheme';
 type ThemeColors = typeof Colors.light;
 interface EditTodoModalProps {
   visible: boolean;
@@ -21,15 +21,15 @@ interface EditTodoModalProps {
   onSave: (todoData: {
     text: string;
     description: string;
-    priority: "p1" | "p2" | "p3" | "p4";
+    priority: 'p1' | 'p2' | 'p3' | 'p4';
   }) => void;
   todoToEdit: Todo | null;
 }
-const priorities: ["p1" | "p2" | "p3" | "p4", string][] = [
-  ["p1", "Priority 1"],
-  ["p2", "Priority 2"],
-  ["p3", "Priority 3"],
-  ["p4", "No Priority"],
+const priorities: ['p1' | 'p2' | 'p3' | 'p4', string][] = [
+  ['p1', 'Priority 1'],
+  ['p2', 'Priority 2'],
+  ['p3', 'Priority 3'],
+  ['p4', 'No Priority'],
 ];
 export function EditTodoModal({
   visible,
@@ -39,19 +39,19 @@ export function EditTodoModal({
 }: EditTodoModalProps) {
   const colors = useTheme();
   const styles = getStyles(colors);
-  const [input, setInput] = useState("");
-  const [description, setDescription] = useState("");
-  const [priority, setPriority] = useState<"p1" | "p2" | "p3" | "p4">("p4");
+  const [input, setInput] = useState('');
+  const [description, setDescription] = useState('');
+  const [priority, setPriority] = useState<'p1' | 'p2' | 'p3' | 'p4'>('p4');
   const [showPrioritySelector, setShowPrioritySelector] = useState(false);
   useEffect(() => {
     if (todoToEdit) {
       setInput(todoToEdit.text);
-      setDescription(todoToEdit.description || "");
+      setDescription(todoToEdit.description || '');
       setPriority(todoToEdit.priority);
     } else {
-      setInput("");
-      setDescription("");
-      setPriority("p4");
+      setInput('');
+      setDescription('');
+      setPriority('p4');
     }
   }, [todoToEdit, visible]);
   const handleSave = () => {
@@ -77,9 +77,9 @@ export function EditTodoModal({
       <View style={styles.modalContainer}>
         <Pressable style={StyleSheet.absoluteFill} onPress={handleClose} />
         <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
           style={{
-            width: "100%",
+            width: '100%',
           }}
         >
           <View style={styles.modalContent}>
@@ -103,8 +103,8 @@ export function EditTodoModal({
             <View style={styles.modalActionsRow}>
               <View
                 style={{
-                  flexDirection: "row",
-                  alignItems: "center",
+                  flexDirection: 'row',
+                  alignItems: 'center',
                 }}
               >
                 <TouchableOpacity
@@ -134,7 +134,7 @@ export function EditTodoModal({
                       fontSize: 13,
                     }}
                   >
-                    {priorities.find((p) => p[0] === priority)?.[1]}
+                    {priorities.find(p => p[0] === priority)?.[1]}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -149,7 +149,7 @@ export function EditTodoModal({
                 }}
               >
                 <Ionicons
-                  name={todoToEdit ? "checkmark" : "arrow-up"}
+                  name={todoToEdit ? 'checkmark' : 'arrow-up'}
                   size={16}
                   color="#fff"
                 />
@@ -217,8 +217,8 @@ const getStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     modalContainer: {
       flex: 1,
-      justifyContent: "flex-end",
-      backgroundColor: "rgba(0,0,0,0.5)",
+      justifyContent: 'flex-end',
+      backgroundColor: 'rgba(0,0,0,0.5)',
     },
     modalContent: {
       backgroundColor: colors.card,
@@ -232,7 +232,7 @@ const getStyles = (colors: ThemeColors) =>
       color: colors.text,
       fontSize: 22,
       marginBottom: 8,
-      fontWeight: "bold",
+      fontWeight: 'bold',
     },
     inputDescription: {
       color: colors.textSecondary,
@@ -245,13 +245,13 @@ const getStyles = (colors: ThemeColors) =>
       marginBottom: 10,
     },
     modalActionsRow: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between",
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
     },
     priorityButton: {
-      flexDirection: "row",
-      alignItems: "center",
+      flexDirection: 'row',
+      alignItems: 'center',
       borderRadius: 16,
       borderWidth: 1,
       paddingVertical: 0,
@@ -279,15 +279,15 @@ const getStyles = (colors: ThemeColors) =>
       borderRadius: 16,
       width: 32,
       height: 32,
-      alignItems: "center",
-      justifyContent: "center",
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     bottomSheetOverlay: {
       ...StyleSheet.absoluteFillObject,
-      backgroundColor: "rgba(0,0,0,0.5)",
+      backgroundColor: 'rgba(0,0,0,0.5)',
     },
     bottomSheet: {
-      position: "absolute",
+      position: 'absolute',
       left: 0,
       right: 0,
       bottom: 0,
@@ -302,12 +302,12 @@ const getStyles = (colors: ThemeColors) =>
     bottomSheetList: {
       backgroundColor: colors.cardSecondary,
       borderRadius: 12,
-      overflow: "hidden",
+      overflow: 'hidden',
       marginBottom: 16,
     },
     bottomSheetOption: {
-      flexDirection: "row",
-      alignItems: "center",
+      flexDirection: 'row',
+      alignItems: 'center',
       paddingVertical: 18,
       paddingHorizontal: 10,
     },
@@ -319,13 +319,13 @@ const getStyles = (colors: ThemeColors) =>
       marginTop: 8,
       backgroundColor: colors.cardSecondary,
       borderRadius: 14,
-      alignItems: "center",
-      justifyContent: "center",
+      alignItems: 'center',
+      justifyContent: 'center',
       paddingVertical: 16,
     },
     bottomSheetCancelText: {
       color: colors.text,
       fontSize: 18,
-      fontWeight: "600",
+      fontWeight: '600',
     },
   });

@@ -1,14 +1,14 @@
-import { useFocusEffect } from "@react-navigation/native";
-import * as Haptics from "expo-haptics";
-import React, { useCallback, useState } from "react";
-import { Dimensions, StyleSheet, Text, View } from "react-native";
-import { AddTodoButton } from "@/components/todos/AddTodoButton";
-import { EditTodoModal } from "../../components/todos/EditTodoModal";
-import { TodoList } from "../../components/todos/TodoList";
-import { Colors } from "../../constants/Colors";
-import { Todo, useTodosContext } from "../../hooks/TodosContext";
-import { useTheme } from "../../hooks/useTheme";
-const { height } = Dimensions.get("window");
+import { AddTodoButton } from '@/components/todos/AddTodoButton';
+import { useFocusEffect } from '@react-navigation/native';
+import * as Haptics from 'expo-haptics';
+import React, { useCallback, useState } from 'react';
+import { Dimensions, StyleSheet, Text, View } from 'react-native';
+import { EditTodoModal } from '../../components/todos/EditTodoModal';
+import { TodoList } from '../../components/todos/TodoList';
+import { Colors } from '../../constants/Colors';
+import { Todo, useTodosContext } from '../../hooks/TodosContext';
+import { useTheme } from '../../hooks/useTheme';
+const { height } = Dimensions.get('window');
 type ThemeColors = typeof Colors.light;
 export default function Index() {
   const colors = useTheme();
@@ -28,7 +28,7 @@ export default function Index() {
   const handleSaveTodo = async (todoData: {
     text: string;
     description: string;
-    priority: "p1" | "p2" | "p3" | "p4";
+    priority: 'p1' | 'p2' | 'p3' | 'p4';
   }) => {
     if (editingTodo) {
       await updateTodo({
@@ -60,9 +60,6 @@ export default function Index() {
     <View style={styles.container}>
       <Text style={styles.today}>Tasks</Text>
 
-      {}
-
-      {}
       <TodoList
         todos={activeTodos}
         onToggleComplete={toggleTodoCompleted}
@@ -95,7 +92,7 @@ const getStyles = (colors: ThemeColors) =>
     today: {
       color: colors.text,
       fontSize: 36,
-      fontWeight: "bold",
+      fontWeight: 'bold',
       marginBottom: 16,
     },
   });

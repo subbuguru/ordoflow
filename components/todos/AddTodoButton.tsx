@@ -1,7 +1,7 @@
-import { Ionicons } from "@expo/vector-icons";
-import React from "react";
-import { StyleSheet, TouchableOpacity } from "react-native";
-import { useTheme } from "../../hooks/useTheme";
+import { Ionicons } from '@expo/vector-icons';
+import React from 'react';
+import { StyleSheet, TouchableOpacity } from 'react-native';
+import { useTheme } from '../../hooks/useTheme';
 interface AddTodoButtonProps {
   onPress: () => void;
 }
@@ -23,16 +23,16 @@ export function AddTodoButton({ onPress }: AddTodoButtonProps) {
 }
 const styles = StyleSheet.create({
   button: {
-    position: "absolute",
+    position: 'absolute',
     right: 24,
     bottom: 96,
     width: 64,
     height: 64,
     borderRadius: 32,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     elevation: 4,
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 2,

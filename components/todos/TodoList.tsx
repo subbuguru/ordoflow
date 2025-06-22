@@ -1,13 +1,13 @@
-import * as Haptics from "expo-haptics";
-import React from "react";
-import { StyleSheet, Text } from "react-native";
+import * as Haptics from 'expo-haptics';
+import React from 'react';
+import { StyleSheet, Text } from 'react-native';
 import DraggableFlatList, {
   RenderItemParams,
-} from "react-native-draggable-flatlist";
-import { Colors } from "../../constants/Colors";
-import { Todo } from "../../hooks/TodosContext";
-import { useTheme } from "../../hooks/useTheme";
-import { TodoListItem } from "./TodoListItem";
+} from 'react-native-draggable-flatlist';
+import { Colors } from '../../constants/Colors';
+import { Todo } from '../../hooks/TodosContext';
+import { useTheme } from '../../hooks/useTheme';
+import { TodoListItem } from './TodoListItem';
 type ThemeColors = typeof Colors.light;
 interface TodoListProps {
   todos: Todo[];
@@ -43,7 +43,7 @@ export function TodoList({
   return (
     <DraggableFlatList
       data={todos}
-      keyExtractor={(item) => item.id}
+      keyExtractor={item => item.id}
       renderItem={renderItem}
       onDragBegin={() =>
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
@@ -65,10 +65,10 @@ const getStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     emptyContainer: {
       flexGrow: 1,
-      paddingTop: "25%",
+      paddingTop: '25%',
     },
     empty: {
       color: colors.textSecondary,
-      textAlign: "center",
+      textAlign: 'center',
     },
   });

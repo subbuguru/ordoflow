@@ -1,23 +1,23 @@
-import { Ionicons } from "@expo/vector-icons";
-import * as Haptics from "expo-haptics";
-import React, { useState } from "react";
+import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
+import React, { useState } from 'react';
 import {
   Pressable,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-} from "react-native";
-import { Gesture, GestureDetector } from "react-native-gesture-handler";
+} from 'react-native';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   runOnJS,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
-} from "react-native-reanimated";
-import { Colors } from "../../constants/Colors";
-import { Todo } from "../../hooks/TodosContext";
-import { useTheme } from "../../hooks/useTheme";
+} from 'react-native-reanimated';
+import { Colors } from '../../constants/Colors';
+import { Todo } from '../../hooks/TodosContext';
+import { useTheme } from '../../hooks/useTheme';
 type ThemeColors = typeof Colors.light;
 interface TodoListItemProps {
   item: Todo;
@@ -51,17 +51,17 @@ export function TodoListItem({
     setIsVisuallyCompleting(false);
   }, [item, itemOpacity, itemScale, translateX]);
   const panGesture = Gesture.Pan()
-    .onUpdate((event) => {
+    .onUpdate(event => {
       if (event.translationX < 0) {
         translateX.value = event.translationX;
       }
     })
     .onEnd(() => {
-      "worklet";
+      'worklet';
 
       if (translateX.value < SWIPE_THRESHOLD) {
         translateX.value = withTiming(-500);
-        itemOpacity.value = withTiming(0, undefined, (isFinished) => {
+        itemOpacity.value = withTiming(0, undefined, isFinished => {
           if (isFinished) {
             runOnJS(onDelete)(item.id);
           }
@@ -130,21 +130,21 @@ export function TodoListItem({
                 <View
                   style={[
                     styles.circle,
-                    !isComplete && item.priority === "p1" && styles.circleP1,
-                    !isComplete && item.priority === "p2" && styles.circleP2,
-                    !isComplete && item.priority === "p3" && styles.circleP3,
-                    !isComplete && item.priority === "p4" && styles.circleP4,
+                    !isComplete && item.priority === 'p1' && styles.circleP1,
+                    !isComplete && item.priority === 'p2' && styles.circleP2,
+                    !isComplete && item.priority === 'p3' && styles.circleP3,
+                    !isComplete && item.priority === 'p4' && styles.circleP4,
                     isComplete &&
-                      item.priority === "p1" &&
+                      item.priority === 'p1' &&
                       styles.circleCompletedP1,
                     isComplete &&
-                      item.priority === "p2" &&
+                      item.priority === 'p2' &&
                       styles.circleCompletedP2,
                     isComplete &&
-                      item.priority === "p3" &&
+                      item.priority === 'p3' &&
                       styles.circleCompletedP3,
                     isComplete &&
-                      item.priority === "p4" &&
+                      item.priority === 'p4' &&
                       styles.circleCompletedP4,
                   ]}
                 >
@@ -197,22 +197,22 @@ export function TodoListItem({
 const getStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     swipeContainer: {
-      justifyContent: "center",
+      justifyContent: 'center',
     },
     deleteBackground: {
       backgroundColor: colors.p1,
-      position: "absolute",
+      position: 'absolute',
       right: 0,
       left: 0,
       top: 0,
       bottom: 0,
-      justifyContent: "center",
-      alignItems: "flex-end",
+      justifyContent: 'center',
+      alignItems: 'flex-end',
       paddingRight: 40,
     },
     todoRow: {
-      flexDirection: "row",
-      alignItems: "center",
+      flexDirection: 'row',
+      alignItems: 'center',
       paddingVertical: 16,
       borderBottomWidth: 1,
       borderBottomColor: colors.border,
@@ -224,8 +224,8 @@ const getStyles = (colors: ThemeColors) =>
       borderRadius: 13,
       borderWidth: 2,
       marginRight: 16,
-      alignItems: "center",
-      justifyContent: "center",
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     circleP1: {
       borderColor: colors.p1,
@@ -267,7 +267,7 @@ const getStyles = (colors: ThemeColors) =>
       fontSize: 16,
     },
     todoTextCompleted: {
-      textDecorationLine: "line-through",
+      textDecorationLine: 'line-through',
       color: colors.textSecondary,
     },
     todoDescription: {
